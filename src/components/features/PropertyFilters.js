@@ -1,10 +1,9 @@
 import React from 'react';
-import FilterPanel from './FilterPanel';
-import Button from './Button';
+import FilterPanel from '../ui/FilterPanel';
+import Button from '../ui/Button';
+import { LOCATIONS, PROPERTY_TYPES, BEDROOM_OPTIONS, BATHROOM_OPTIONS } from '../../config/constants';
 
 const PropertyFilters = ({ filters, onFilterChange, onReset }) => {
-  const locations = ['All', 'Downtown', 'Midtown', 'Uptown', 'Suburbs', 'Coastal', 'Mountains'];
-  const propertyTypes = ['All', 'House', 'Condo', 'Apartment', 'Townhouse'];
 
   return (
     <FilterPanel title="Filter Properties" onReset={onReset}>
@@ -13,7 +12,7 @@ const PropertyFilters = ({ filters, onFilterChange, onReset }) => {
           value={filters.location} 
           onChange={(e) => onFilterChange('location', e.target.value)}
         >
-          {locations.map(loc => (
+          {LOCATIONS.map(loc => (
             <option key={loc} value={loc}>{loc}</option>
           ))}
         </select>
@@ -24,7 +23,7 @@ const PropertyFilters = ({ filters, onFilterChange, onReset }) => {
           value={filters.type} 
           onChange={(e) => onFilterChange('type', e.target.value)}
         >
-          {propertyTypes.map(type => (
+          {PROPERTY_TYPES.map(type => (
             <option key={type} value={type}>{type}</option>
           ))}
         </select>
@@ -50,7 +49,7 @@ const PropertyFilters = ({ filters, onFilterChange, onReset }) => {
 
       <FilterPanel.Group label="Bedrooms">
         <FilterPanel.ButtonGroup>
-          {['Any', '1+', '2+', '3+', '4+'].map(bed => (
+          {BEDROOM_OPTIONS.map(bed => (
             <Button
               key={bed}
               variant="filter"
@@ -65,7 +64,7 @@ const PropertyFilters = ({ filters, onFilterChange, onReset }) => {
 
       <FilterPanel.Group label="Bathrooms">
         <FilterPanel.ButtonGroup>
-          {['Any', '1+', '2+', '3+'].map(bath => (
+          {BATHROOM_OPTIONS.map(bath => (
             <Button
               key={bath}
               variant="filter"

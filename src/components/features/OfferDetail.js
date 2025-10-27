@@ -1,16 +1,9 @@
 import React from 'react';
-import Button from './Button';
-import Card from './Card';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import { formatPrice, getOfferStatusColor, getOfferStatusIcon } from '../../utils/formatters';
 
 const OfferDetail = ({ offer, onBack }) => {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -20,36 +13,6 @@ const OfferDetail = ({ offer, onBack }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'sent':
-        return '#2563eb';
-      case 'viewed':
-        return '#f59e0b';
-      case 'accepted':
-        return '#10b981';
-      case 'rejected':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'sent':
-        return '📤';
-      case 'viewed':
-        return '👀';
-      case 'accepted':
-        return '✅';
-      case 'rejected':
-        return '❌';
-      default:
-        return '⏳';
-    }
   };
 
   const getStatusText = (status) => {
@@ -78,9 +41,9 @@ const OfferDetail = ({ offer, onBack }) => {
         </Button>
       </div>
 
-      <div className="detail-status-banner" style={{ backgroundColor: getStatusColor(offer.status) }}>
+      <div className="detail-status-banner" style={{ backgroundColor: getOfferStatusColor(offer.status) }}>
         <div className="status-banner-content">
-          <span className="status-icon-large">{getStatusIcon(offer.status)}</span>
+          <span className="status-icon-large">{getOfferStatusIcon(offer.status)}</span>
           <div>
             <h2>{getStatusText(offer.status)}</h2>
             <p>Deal ID: {offer.id}</p>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import FilterPanel from './FilterPanel';
-import Button from './Button';
+import FilterPanel from '../ui/FilterPanel';
+import Button from '../ui/Button';
+import { LOCATIONS, PROPERTY_TYPES } from '../../config/constants';
 
 const AddProperty = ({ onAddProperty, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -17,8 +18,9 @@ const AddProperty = ({ onAddProperty, onCancel }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const locations = ['Downtown', 'Midtown', 'Uptown', 'Suburbs', 'Coastal', 'Mountains'];
-  const propertyTypes = ['House', 'Condo', 'Apartment', 'Townhouse'];
+  // Filter out 'All' from locations for property listing
+  const locations = LOCATIONS.filter(loc => loc !== 'All');
+  const propertyTypes = PROPERTY_TYPES.filter(type => type !== 'All');
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));

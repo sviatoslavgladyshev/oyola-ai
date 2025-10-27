@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import FilterPanel from './FilterPanel';
-import Button from './Button';
+import FilterPanel from '../ui/FilterPanel';
+import Button from '../ui/Button';
+import { 
+  LOCATIONS, 
+  PROPERTY_TYPES, 
+  FINANCING_TYPES, 
+  CLOSING_TIMELINES, 
+  CONTINGENCY_OPTIONS, 
+  BEDROOM_OPTIONS, 
+  BATHROOM_OPTIONS 
+} from '../../config/constants';
 
 const OfferForm = ({ user, onSubmitOffer }) => {
   const [formData, setFormData] = useState({
@@ -22,12 +31,6 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-
-  const locations = ['All', 'Downtown', 'Midtown', 'Uptown', 'Suburbs', 'Coastal', 'Mountains'];
-  const propertyTypes = ['All', 'House', 'Condo', 'Apartment', 'Townhouse'];
-  const financingTypes = ['Cash', 'Pre-approved Mortgage', 'Conventional Loan', 'FHA Loan'];
-  const closingTimelines = ['15 days', '30 days', '45 days', '60 days', '90 days'];
-  const contingencyOptions = ['Inspection', 'Appraisal', 'Financing', 'Sale of Current Home'];
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
@@ -104,7 +107,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
               value={formData.location} 
               onChange={(e) => handleChange('location', e.target.value)}
             >
-              {locations.map(loc => (
+              {LOCATIONS.map(loc => (
                 <option key={loc} value={loc}>{loc}</option>
               ))}
             </select>
@@ -115,7 +118,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
               value={formData.type} 
               onChange={(e) => handleChange('type', e.target.value)}
             >
-              {propertyTypes.map(type => (
+              {PROPERTY_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -144,7 +147,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
           <FilterPanel.Group label="Bedrooms">
             <FilterPanel.ButtonGroup>
-              {['Any', '1+', '2+', '3+', '4+'].map(bed => (
+              {BEDROOM_OPTIONS.map(bed => (
                 <Button
                   key={bed}
                   type="button"
@@ -160,7 +163,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
           <FilterPanel.Group label="Bathrooms">
             <FilterPanel.ButtonGroup>
-              {['Any', '1+', '2+', '3+'].map(bath => (
+              {BATHROOM_OPTIONS.map(bath => (
                 <Button
                   key={bath}
                   type="button"
@@ -197,7 +200,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
               value={formData.financingType} 
               onChange={(e) => handleChange('financingType', e.target.value)}
             >
-              {financingTypes.map(type => (
+              {FINANCING_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -208,7 +211,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
               value={formData.closingTimeline} 
               onChange={(e) => handleChange('closingTimeline', e.target.value)}
             >
-              {closingTimelines.map(timeline => (
+              {CLOSING_TIMELINES.map(timeline => (
                 <option key={timeline} value={timeline}>{timeline}</option>
               ))}
             </select>
@@ -216,7 +219,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
           <FilterPanel.Group label="Contingencies">
             <FilterPanel.ButtonGroup>
-              {contingencyOptions.map(contingency => (
+              {CONTINGENCY_OPTIONS.map(contingency => (
                 <Button
                   key={contingency}
                   type="button"

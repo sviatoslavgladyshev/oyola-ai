@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from './Button';
+import Button from '../components/ui/Button';
 import { updateProfile, changePassword } from '../services/authService';
 
 const Profile = ({ user, onUpdateUser, onClose }) => {

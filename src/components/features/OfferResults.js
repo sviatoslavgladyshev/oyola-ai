@@ -1,40 +1,19 @@
 import React from 'react';
-import Card from './Card';
+import Card from '../ui/Card';
+import { formatPrice, getOfferStatusColor, getOfferStatusIcon } from '../../utils/formatters';
 
 const OfferResults = ({ offers, matchingProperties, onSelectOffer }) => {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'sent':
-        return '#2563eb';
-      case 'viewed':
-        return '#f59e0b';
-      case 'accepted':
-        return '#10b981';
-      case 'rejected':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
-
   const getStatusText = (status) => {
+    const icon = getOfferStatusIcon(status);
     switch (status) {
       case 'sent':
-        return '📤 Offer Sent';
+        return `${icon} Offer Sent`;
       case 'viewed':
         return '👀 Owner Viewed';
       case 'accepted':
-        return '✅ Accepted';
+        return `${icon} Accepted`;
       case 'rejected':
-        return '❌ Declined';
+        return `${icon} Declined`;
       default:
         return '⏳ Pending';
     }
@@ -72,7 +51,7 @@ const OfferResults = ({ offers, matchingProperties, onSelectOffer }) => {
           <div className="timeline">
             {offers.map((offer) => (
               <div key={offer.id} className="timeline-item">
-                <div className="timeline-marker" style={{ backgroundColor: getStatusColor(offer.status) }} />
+                <div className="timeline-marker" style={{ backgroundColor: getOfferStatusColor(offer.status) }} />
                 <Card className="timeline-card" onClick={() => onSelectOffer(offer)}>
                   <Card.Content>
                     <div className="offer-header">
@@ -80,7 +59,7 @@ const OfferResults = ({ offers, matchingProperties, onSelectOffer }) => {
                         <Card.Title>{offer.property.title}</Card.Title>
                         <Card.Subtitle>📍 {offer.property.location}</Card.Subtitle>
                       </div>
-                      <div className="offer-status" style={{ color: getStatusColor(offer.status) }}>
+                      <div className="offer-status" style={{ color: getOfferStatusColor(offer.status) }}>
                         {getStatusText(offer.status)}
                       </div>
                     </div>

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import OfferForm from './components/OfferForm';
-import OfferResults from './components/OfferResults';
-import OfferDetail from './components/OfferDetail';
-import OwnerDashboard from './components/OwnerDashboard';
-import SignIn from './components/SignIn';
-import SignUp from './components/SignUp';
-import Profile from './components/Profile';
-import Header from './components/Header';
-import Button from './components/Button';
+import OfferForm from './components/features/OfferForm';
+import OfferResults from './components/features/OfferResults';
+import OfferDetail from './components/features/OfferDetail';
+import OwnerDashboard from './pages/OwnerDashboard';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import Profile from './pages/Profile';
+import Header from './components/layout/Header';
+import Notification from './components/layout/Notification';
+import Button from './components/ui/Button';
 import { submitOfferToOwners, simulateOwnerResponses } from './services/offerService';
 import { getCurrentUser, signIn, signUp, signOut } from './services/authService';
 import { initializeSampleData } from './services/propertyService';
@@ -110,20 +111,10 @@ function App() {
           </div>
         </header>
 
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            <span className="notification-icon">
-              {notification.type === 'success' ? '✅' : '⚠️'}
-            </span>
-            <span className="notification-message">{notification.message}</span>
-            <button 
-              className="notification-close" 
-              onClick={() => setNotification(null)}
-            >
-              ×
-            </button>
-          </div>
-        )}
+        <Notification 
+          notification={notification} 
+          onClose={() => setNotification(null)} 
+        />
 
         {authView === 'signin' ? (
           <SignIn 
@@ -151,20 +142,10 @@ function App() {
           onOpenProfile={() => setShowProfile(true)}
         />
 
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            <span className="notification-icon">
-              {notification.type === 'success' ? '✅' : '⚠️'}
-            </span>
-            <span className="notification-message">{notification.message}</span>
-            <button 
-              className="notification-close" 
-              onClick={() => setNotification(null)}
-            >
-              ×
-            </button>
-          </div>
-        )}
+        <Notification 
+          notification={notification} 
+          onClose={() => setNotification(null)} 
+        />
 
         {showProfile && (
           <Profile 
@@ -193,20 +174,10 @@ function App() {
         onOpenProfile={() => setShowProfile(true)}
       />
 
-      {notification && (
-        <div className={`notification ${notification.type}`}>
-          <span className="notification-icon">
-            {notification.type === 'success' ? '✅' : '⚠️'}
-          </span>
-          <span className="notification-message">{notification.message}</span>
-          <button 
-            className="notification-close" 
-            onClick={() => setNotification(null)}
-          >
-            ×
-          </button>
-        </div>
-      )}
+      <Notification 
+        notification={notification} 
+        onClose={() => setNotification(null)} 
+      />
 
       {showProfile && (
         <Profile 

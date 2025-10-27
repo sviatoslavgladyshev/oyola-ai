@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from './Button';
+import Button from '../components/ui/Button';
 
 const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
   const [formData, setFormData] = useState({

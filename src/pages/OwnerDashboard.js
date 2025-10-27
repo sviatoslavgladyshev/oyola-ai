@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Button from './Button';
-import Card from './Card';
-import AddProperty from './AddProperty';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import AddProperty from '../components/features/AddProperty';
 import { getPropertiesByOwner, getOffersForOwner, addProperty, deleteProperty, updateOfferStatus } from '../services/propertyService';
+import { formatPrice, formatDate, getOfferStatusColor } from '../utils/formatters';
 
 const OwnerDashboard = ({ user, onShowNotification }) => {
   const [view, setView] = useState('properties'); // 'properties', 'offers', 'add-property'
@@ -53,31 +54,6 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const getOfferStatusColor = (status) => {
-    switch (status) {
-      case 'sent': return '#2563eb';
-      case 'viewed': return '#f59e0b';
-      case 'accepted': return '#10b981';
-      case 'rejected': return '#ef4444';
-      default: return '#6b7280';
-    }
-  };
 
   const pendingOffers = offers.filter(o => o.status === 'sent' || o.status === 'viewed');
   const respondedOffers = offers.filter(o => o.status === 'accepted' || o.status === 'rejected');
