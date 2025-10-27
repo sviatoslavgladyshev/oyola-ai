@@ -1782,6 +1782,117 @@ code {
   max-width: 200px;
 }
 
+/* Forgot Password Modal */
+.forgot-password-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.forgot-password-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-description {
+  color: #666;
+  font-size: 15px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.success-icon {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.forgot-password-card h2 {
+  text-align: center;
+  margin: 0 0 16px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.success-message {
+  text-align: center;
+  color: #333;
+  font-size: 16px;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.full-width-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.button-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.button-group-vertical .full-width-btn {
+  margin-top: 0;
+}
+
 .form-footer {
   display: flex;
   justify-content: space-between;
