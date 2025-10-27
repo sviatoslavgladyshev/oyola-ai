@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { HiDocumentText, HiCog, HiCheck, HiPresentationChartBar } from 'react-icons/hi';
 import OfferForm from './components/features/OfferForm';
 import OfferResults from './components/features/OfferResults';
 import OfferDetail from './components/features/OfferDetail';
@@ -131,7 +132,7 @@ function App() {
       <div className="App">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <h2>🏡 Loading...</h2>
+          <h2>Loading...</h2>
           <p>Please wait while we load your session</p>
         </div>
       </div>
@@ -142,10 +143,9 @@ function App() {
   if (!user) {
     return (
       <div className="App">
-        <header className="app-header">
+        <header className="app-header no-border">
           <div className="header-content">
-            <h1>🏡 Automated Property Offer Platform</h1>
-            <p>Enter your criteria and we'll automatically find properties and contact owners with your offer</p>
+            <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="header-logo" />
           </div>
         </header>
 
@@ -231,14 +231,14 @@ function App() {
             variant={view === 'form' ? 'primary' : 'reset'}
             onClick={() => setView('form')}
           >
-            📝 Submit New Offer
+            <HiDocumentText size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> Submit New Offer
           </Button>
           <Button
             variant={view === 'results' || view === 'detail' ? 'primary' : 'reset'}
             onClick={() => setView('results')}
             disabled={offers.length === 0}
           >
-            📊 View My Offers ({offers.length})
+            <HiPresentationChartBar size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> View My Offers ({offers.length})
           </Button>
         </div>
 
@@ -259,15 +259,15 @@ function App() {
               />
               <div className="new-offer-section">
                 <Button variant="primary" onClick={handleNewOffer}>
-                  🎯 Submit Another Offer
+                  <HiCheck size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> Submit Another Offer
                 </Button>
               </div>
             </>
           )}
         </main>
 
-        <div className="info-banner">
-          <h3>🤖 How It Works</h3>
+        <div className="info-banner animate-on-load">
+          <h3><HiCog size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> How It Works</h3>
           <div className="steps">
             <div className="step">
               <div className="step-number">1</div>

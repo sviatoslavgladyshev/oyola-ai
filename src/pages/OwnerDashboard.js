@@ -9,7 +9,6 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
   const [view, setView] = useState('properties'); // 'properties', 'offers', 'add-property'
   const [properties, setProperties] = useState([]);
   const [offers, setOffers] = useState([]);
-
   const loadData = useCallback(() => {
     const userProperties = getPropertiesByOwner(user.id);
     const userOffers = getOffersForOwner(user.id);
@@ -78,7 +77,7 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
         </Button>
       </div>
 
-      <div className="owner-stats">
+      <div className="owner-stats animate-on-load">
         <div className="stat-card">
           <span className="stat-value">{properties.length}</span>
           <span className="stat-label">Active Listings</span>
@@ -115,7 +114,7 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
       {view === 'properties' ? (
         <div className="properties-section">
           {properties.length > 0 ? (
-            <div className="property-grid">
+            <div className="property-grid animate-on-load">
               {properties.map(property => (
                 <Card key={property.id}>
                   <Card.Image 
@@ -160,7 +159,7 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
               {pendingOffers.length > 0 && (
                 <div className="offers-group">
                   <h3>⏳ Pending Offers ({pendingOffers.length})</h3>
-                  <div className="offers-list">
+                  <div className="offers-list animate-on-load">
                     {pendingOffers.map(offer => (
                       <div key={offer.id} className="offer-card">
                         <div className="offer-card-header">
@@ -226,7 +225,7 @@ const OwnerDashboard = ({ user, onShowNotification }) => {
               {respondedOffers.length > 0 && (
                 <div className="offers-group">
                   <h3>✅ Responded Offers ({respondedOffers.length})</h3>
-                  <div className="offers-list">
+                  <div className="offers-list animate-on-load">
                     {respondedOffers.map(offer => (
                       <div key={offer.id} className="offer-card responded">
                         <div className="offer-card-header">

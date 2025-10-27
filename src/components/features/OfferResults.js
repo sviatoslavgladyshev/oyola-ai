@@ -21,7 +21,7 @@ const OfferResults = ({ offers, matchingProperties, onSelectOffer }) => {
 
   return (
     <div className="offer-results">
-      <div className="results-summary">
+      <div className="results-summary animate-on-load">
         <div className="summary-card">
           <div className="summary-icon">🏠</div>
           <div className="summary-content">
@@ -48,7 +48,7 @@ const OfferResults = ({ offers, matchingProperties, onSelectOffer }) => {
       <div className="offers-timeline">
         <h2 className="timeline-title">Your Offers Timeline</h2>
         {offers.length > 0 ? (
-          <div className="timeline">
+          <div className="timeline animate-on-load">
             {offers.map((offer) => (
               <div key={offer.id} className="timeline-item">
                 <div className="timeline-marker" style={{ backgroundColor: getOfferStatusColor(offer.status) }} />
