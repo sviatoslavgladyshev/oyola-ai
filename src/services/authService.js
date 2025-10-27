@@ -209,11 +209,39 @@ export const sendPasswordResetEmail = async (email) => {
     throw new Error('Please enter email');
   }
 
+  console.log('════════════════════════════════════════');
+  console.log('🔍 DEBUG: Starting password reset process...');
+  console.log('📧 Email:', email);
+  console.log('🔐 Auth instance:', auth);
+  console.log('🔐 Auth app:', auth.app);
+  console.log('🌐 Auth current user:', auth.currentUser);
+  console.log('════════════════════════════════════════');
+
   try {
+    console.log('📤 Calling Firebase sendPasswordResetEmail...');
     await firebaseSendPasswordResetEmail(auth, email);
+    console.log('════════════════════════════════════════');
+    console.log('✅✅✅ SUCCESS: Firebase accepted the request ✅✅✅');
+    console.log('📬 Email should be sent to:', email);
+    console.log('⚠️⚠️⚠️ CHECK SPAM FOLDER IF NOT IN INBOX! ⚠️⚠️⚠️');
+    console.log('════════════════════════════════════════');
     return true;
   } catch (error) {
-    throw new Error(error.message);
+    console.error('❌ ERROR: Failed to send password reset email');
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    console.error('Full error:', error);
+    
+    // Provide specific error messages
+    if (error.code === 'auth/user-not-found') {
+      throw new Error('No account found with this email address. Please sign up first.');
+    } else if (error.code === 'auth/invalid-email') {
+      throw new Error('Invalid email address format.');
+    } else if (error.code === 'auth/missing-email') {
+      throw new Error('Please enter an email address.');
+    } else {
+      throw new Error(error.message || 'Failed to send reset email. Please try again.');
+    }
   }
 };
 

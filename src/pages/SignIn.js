@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../components/ui/Button';
 import { signInWithGoogle } from '../services/authService';
+import ForgotPassword from './ForgotPassword';
 
 const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -42,6 +44,15 @@ const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
       setIsLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword 
+        onBack={() => setShowForgotPassword(false)}
+        onClose={() => setShowForgotPassword(false)}
+      />
+    );
+  }
 
   return (
     <div className="auth-container">
@@ -92,7 +103,13 @@ const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
               />
               <span>Remember me</span>
             </label>
-            <a href="#forgot" className="link">Forgot password?</a>
+            <button 
+              type="button"
+              className="link" 
+              onClick={() => setShowForgotPassword(true)}
+            >
+              Forgot password?
+            </button>
           </div>
 
           <Button 
