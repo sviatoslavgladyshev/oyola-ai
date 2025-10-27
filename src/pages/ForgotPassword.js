@@ -58,7 +58,6 @@ const ForgotPassword = ({ onBack, onClose }) => {
     return (
       <div className="forgot-password-modal">
         <div className="forgot-password-card">
-          <div className="success-icon">✉️</div>
           <h2>Check Your Email</h2>
           <p className="success-message">
             We've sent a password reset link to <strong>{email}</strong>
@@ -81,7 +80,7 @@ const ForgotPassword = ({ onBack, onClose }) => {
               className="full-width-btn"
               onClick={openEmailApp}
             >
-              📧 Open Mail App
+              Open Mail App
             </Button>
             <Button 
               variant="reset" 
@@ -89,7 +88,7 @@ const ForgotPassword = ({ onBack, onClose }) => {
               onClick={handleResend}
               disabled={isLoading}
             >
-              {isLoading ? '⏳ Resending...' : '🔄 Resend Email'}
+              {isLoading ? 'Resending...' : 'Resend Email'}
             </Button>
             <Button 
               variant="reset" 
@@ -108,7 +107,7 @@ const ForgotPassword = ({ onBack, onClose }) => {
     <div className="forgot-password-modal" onClick={onClose}>
       <div className="forgot-password-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>🔐 Reset Password</h2>
+          <h2>Reset Password</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
 
@@ -143,14 +142,14 @@ const ForgotPassword = ({ onBack, onClose }) => {
             className="full-width-btn"
             disabled={isLoading}
           >
-            {isLoading ? '⏳ Sending...' : '📧 Send Reset Link'}
+            {isLoading ? 'Sending...' : 'Send Reset Link'}
           </Button>
         </form>
 
         <div className="modal-footer">
-          <button className="link-button" onClick={onBack}>
+          <Button variant="reset" className="full-width-btn" onClick={onBack}>
             ← Back to Sign In
-          </button>
+          </Button>
         </div>
       </div>
     </div>
