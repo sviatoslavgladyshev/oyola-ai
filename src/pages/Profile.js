@@ -6,7 +6,7 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'security'
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user.name,
+    name: user.displayName || user.name || '',
     phone: user.phone || '',
     bio: user.bio || ''
   });
@@ -100,13 +100,15 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
               <div className="profile-avatar">
                 <div className="avatar-circle">
                   {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.name} />
+                    <img src={user.photoURL} alt={user.displayName || user.name || user.email} />
                   ) : (
-                    <span className="avatar-initial">{user.name.charAt(0).toUpperCase()}</span>
+                    <span className="avatar-initial">
+                      {(user.displayName || user.name || user.email || '?').charAt(0).toUpperCase()}
+                    </span>
                   )}
                 </div>
                 <div className="profile-info">
-                  <h3>{user.name}</h3>
+                  <h3>{user.displayName || user.name || user.email}</h3>
                   <p>{user.email}</p>
                   <span className="role-badge">{user.role === 'buyer' ? '🏠 Buyer' : '🏘️ Owner'}</span>
                 </div>
@@ -184,7 +186,7 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
                       </Button>
                       <Button variant="reset" onClick={() => {
                         setIsEditing(false);
-                        setFormData({ name: user.name, phone: user.phone || '', bio: user.bio || '' });
+                        setFormData({ name: user.displayName || user.name || '', phone: user.phone || '', bio: user.bio || '' });
                       }}>
                         Cancel
                       </Button>

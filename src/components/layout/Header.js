@@ -30,13 +30,15 @@ const Header = ({ user, onSignOut, onOpenProfile }) => {
               >
                 <div className="user-avatar">
                   {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.name} />
+                    <img src={user.photoURL} alt={user.displayName || user.name || user.email} />
                   ) : (
-                    <span className="avatar-initial">{user.name.charAt(0).toUpperCase()}</span>
+                    <span className="avatar-initial">
+                      {(user.displayName || user.name || user.email || '?').charAt(0).toUpperCase()}
+                    </span>
                   )}
                 </div>
                 <div className="user-info">
-                  <span className="user-name">{user.name}</span>
+                  <span className="user-name">{user.displayName || user.name || user.email}</span>
                   <span className="user-role">{user.role === 'buyer' ? '🏠 Buyer' : '🏘️ Owner'}</span>
                 </div>
                 <span className="dropdown-arrow">▼</span>
@@ -47,7 +49,7 @@ const Header = ({ user, onSignOut, onOpenProfile }) => {
                   <div className="dropdown-overlay" onClick={() => setShowDropdown(false)} />
                   <div className="user-dropdown">
                     <div className="dropdown-header">
-                      <strong>{user.name}</strong>
+                      <strong>{user.displayName || user.name || user.email}</strong>
                       <small>{user.email}</small>
                     </div>
                     <div className="dropdown-divider" />

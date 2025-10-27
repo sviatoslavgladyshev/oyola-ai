@@ -18,6 +18,8 @@ const Button = ({
         return 'btn-reset';
       case 'primary':
         return 'btn-primary';
+      case 'google':
+        return 'btn-google';
       default:
         return '';
     }

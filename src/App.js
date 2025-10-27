@@ -10,11 +10,14 @@ import Header from './components/layout/Header';
 import Notification from './components/layout/Notification';
 import Button from './components/ui/Button';
 import { submitOfferToOwners, simulateOwnerResponses } from './services/offerService';
-import { getCurrentUser, signIn, signUp, signOut } from './services/authService';
+import { onAuthStateChanged, signIn, signUp, signOut } from './services/authService';
 import { initializeSampleData } from './services/propertyService';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from './config/firebase';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [authView, setAuthView] = useState('signin'); // 'signin' or 'signup'
   const [view, setView] = useState('form'); // 'form', 'results', or 'detail'
   const [offers, setOffers] = useState([]);
@@ -26,22 +29,44 @@ function App() {
   // Check for existing user session and initialize sample data on mount
   useEffect(() => {
     initializeSampleData();
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
+    
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        // Fetch additional user data from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            setUser({
+              ...firebaseUser,
+              ...userDoc.data()
+            });
+          } else {
+            setUser(firebaseUser);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          setUser(firebaseUser);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async (email, password) => {
-    const userData = await signIn(email, password);
+  const handleSignIn = async (email, password, rememberMe = true) => {
+    const userData = await signIn(email, password, rememberMe);
     setUser(userData);
-    showNotification(`Welcome back, ${userData.name}!`, 'success');
+    showNotification(`Welcome back, ${userData.displayName || userData.name || 'User'}!`, 'success');
   };
 
   const handleSignUp = async (userData) => {
     const newUser = await signUp(userData);
     setUser(newUser);
-    showNotification(`Welcome to the platform, ${newUser.name}!`, 'success');
+    showNotification(`Welcome to the platform, ${newUser.displayName || newUser.name || 'User'}!`, 'success');
   };
 
   const handleSignOut = async () => {
@@ -99,6 +124,19 @@ function App() {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 5000);
   };
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="App">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <h2>🏡 Loading...</h2>
+          <p>Please wait while we load your session</p>
+        </div>
+      </div>
+    );
+  }
 
   // If user is not signed in, show auth views
   if (!user) {

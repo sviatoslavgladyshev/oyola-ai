@@ -18,6 +18,11 @@
 .env.test.local
 .env.production.local
 
+# OAuth credentials and secrets
+client_secret*.json
+*.pem
+*.key
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
