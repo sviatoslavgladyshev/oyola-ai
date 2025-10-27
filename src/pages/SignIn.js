@@ -58,7 +58,7 @@ const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h2>👋 Welcome Back</h2>
+          <h2>Welcome Back</h2>
           <p>Sign in to continue to your property offers</p>
         </div>
 
@@ -118,7 +118,7 @@ const SignIn = ({ onSignIn, onSwitchToSignUp }) => {
             className="auth-button"
             disabled={isLoading}
           >
-            {isLoading ? '⏳ Signing in...' : '🔐 Sign In'}
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 

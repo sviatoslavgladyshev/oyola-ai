@@ -1950,7 +1950,7 @@ code {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1958,14 +1958,48 @@ code {
   padding: 20px;
 }
 
+.forgot-password-card .form-group {
+  margin-bottom: 20px;
+}
+
+.forgot-password-card .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.forgot-password-card .form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.forgot-password-card .form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.forgot-password-card .full-width-btn {
+  width: 100%;
+  margin-top: 16px;
+}
+
+
 .forgot-password-card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   padding: 40px;
   width: 100%;
   max-width: 480px;
   position: relative;
+  border: none;
+  outline: none;
 }
 
 .modal-header {
@@ -2014,6 +2048,10 @@ code {
 .modal-footer {
   text-align: center;
   margin-top: 20px;
+}
+
+.modal-footer .full-width-btn {
+  width: 100%;
 }
 
 .success-icon {
@@ -2077,10 +2115,14 @@ code {
 }
 
 .link {
+  background: none;
+  border: none;
   color: #2563eb;
   font-size: 14px;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
+  padding: 0;
 }
 
 .link:hover {
