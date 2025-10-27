@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout } from 'react-icons/hi';
 
 const Header = ({ user, onSignOut, onOpenProfile }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -17,8 +18,7 @@ const Header = ({ user, onSignOut, onOpenProfile }) => {
     <header className="app-header">
       <div className="header-content">
         <div className="header-left">
-          <h1>🏡 Automated Property Offer Platform</h1>
-          <p>Enter your criteria and we'll automatically find properties and contact owners with your offer</p>
+          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="header-logo" />
         </div>
         
         {user && (
@@ -39,9 +39,8 @@ const Header = ({ user, onSignOut, onOpenProfile }) => {
                 </div>
                 <div className="user-info">
                   <span className="user-name">{user.displayName || user.name || user.email}</span>
-                  <span className="user-role">{user.role === 'buyer' ? '🏠 Buyer' : '🏘️ Owner'}</span>
                 </div>
-                <span className="dropdown-arrow">▼</span>
+                <span className="dropdown-arrow"><HiChevronDown size={18} /></span>
               </button>
 
               {showDropdown && (
@@ -54,20 +53,20 @@ const Header = ({ user, onSignOut, onOpenProfile }) => {
                     </div>
                     <div className="dropdown-divider" />
                     <button className="dropdown-item" onClick={handleOpenProfile}>
-                      <span>👤</span>
+                      <HiUser size={18} />
                       <span>My Profile</span>
                     </button>
                     <button className="dropdown-item">
-                      <span>📊</span>
+                      <HiChartBar size={18} />
                       <span>My Offers</span>
                     </button>
                     <button className="dropdown-item">
-                      <span>⚙️</span>
+                      <HiCog size={18} />
                       <span>Settings</span>
                     </button>
                     <div className="dropdown-divider" />
                     <button className="dropdown-item danger" onClick={handleSignOut}>
-                      <span>🚪</span>
+                      <HiLogout size={18} />
                       <span>Sign Out</span>
                     </button>
                   </div>
