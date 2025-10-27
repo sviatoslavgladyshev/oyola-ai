@@ -2,7 +2,7 @@
   "name": "oyola-ai",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://yourusername.github.io/oyola-ai",
+  "homepage": "https://sviatoslavgladyshev.github.io/oyola-ai",
   "dependencies": {
     "@dataconnect/generated": "file:src/dataconnect-generated",
     "@testing-library/dom": "^10.4.1",
