@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/oyola-ai/static/css/main.bfce9710.css",
-    "main.js": "/oyola-ai/static/js/main.eb6edd94.js",
+    "main.css": "/oyola-ai/static/css/main.21296809.css",
+    "main.js": "/oyola-ai/static/js/main.1aca027c.js",
     "static/js/453.cc9d2600.chunk.js": "/oyola-ai/static/js/453.cc9d2600.chunk.js",
     "index.html": "/oyola-ai/index.html",
-    "main.bfce9710.css.map": "/oyola-ai/static/css/main.bfce9710.css.map",
-    "main.eb6edd94.js.map": "/oyola-ai/static/js/main.eb6edd94.js.map",
+    "main.21296809.css.map": "/oyola-ai/static/css/main.21296809.css.map",
+    "main.1aca027c.js.map": "/oyola-ai/static/js/main.1aca027c.js.map",
     "453.cc9d2600.chunk.js.map": "/oyola-ai/static/js/453.cc9d2600.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.bfce9710.css",
-    "static/js/main.eb6edd94.js"
+    "static/css/main.21296809.css",
+    "static/js/main.1aca027c.js"
   ]
 }
