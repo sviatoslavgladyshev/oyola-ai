@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HiDocumentText, HiCog, HiCheck, HiPresentationChartBar } from 'react-icons/hi';
+import { HiCog, HiCheck } from 'react-icons/hi';
 import OfferForm from './components/features/OfferForm';
 import OfferResults from './components/features/OfferResults';
 import OfferDetail from './components/features/OfferDetail';
@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Header from './components/layout/Header';
 import Notification from './components/layout/Notification';
 import Button from './components/ui/Button';
+import Loader from './components/ui/Loader';
 import { submitOfferToOwners, simulateOwnerResponses } from './services/offerService';
 import { onAuthStateChanged, signIn, signUp, signOut } from './services/authService';
 import { initializeSampleData } from './services/propertyService';
@@ -129,11 +130,9 @@ function App() {
   // Show loading spinner while checking auth state
   if (loading) {
     return (
-      <div className="App">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <h2>Loading...</h2>
-          <p>Please wait while we load your session</p>
+      <div className="App" style={{ background: 'white', minHeight: '100vh' }}>
+        <div className="loading-container" style={{ background: 'white' }}>
+          <Loader />
         </div>
       </div>
     );
@@ -210,6 +209,10 @@ function App() {
         user={user}
         onSignOut={handleSignOut}
         onOpenProfile={() => setShowProfile(true)}
+        view={view}
+        onViewChange={setView}
+        offersCount={offers.length}
+        onLocationChange={(location) => console.log('Location changed to:', location)}
       />
 
       <Notification 
@@ -226,22 +229,6 @@ function App() {
       )}
 
       <div className="container-single">
-        <div className="view-switcher">
-          <Button
-            variant={view === 'form' ? 'primary' : 'reset'}
-            onClick={() => setView('form')}
-          >
-            <HiDocumentText size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> Submit New Offer
-          </Button>
-          <Button
-            variant={view === 'results' || view === 'detail' ? 'primary' : 'reset'}
-            onClick={() => setView('results')}
-            disabled={offers.length === 0}
-          >
-            <HiPresentationChartBar size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> View My Offers ({offers.length})
-          </Button>
-        </div>
-
         <main className="main-content-single">
           {view === 'form' ? (
             <OfferForm user={user} onSubmitOffer={handleSubmitOffer} />

@@ -1,15 +1,5 @@
 // Global constants for the application
-
-// Location options
-export const LOCATIONS = [
-  'All',
-  'Downtown',
-  'Midtown',
-  'Uptown',
-  'Suburbs',
-  'Coastal',
-  'Mountains'
-];
+// Note: US Cities/Locations are now loaded dynamically via @mardillu/us-cities-utils
 
 // Property type options
 export const PROPERTY_TYPES = [
