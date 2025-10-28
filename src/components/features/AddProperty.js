@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FilterPanel from '../ui/FilterPanel';
 import Button from '../ui/Button';
-import { LOCATIONS, PROPERTY_TYPES } from '../../config/constants';
+import { searchCities } from '@mardillu/us-cities-utils';
+import { PROPERTY_TYPES } from '../../config/constants';
 
 const AddProperty = ({ onAddProperty, onCancel }) => {
   const [formData, setFormData] = useState({
     title: '',
-    location: 'Downtown',
+    location: 'New York, New York',
     price: '',
     bedrooms: 2,
     bathrooms: 2,
@@ -17,9 +18,52 @@ const AddProperty = ({ onAddProperty, onCancel }) => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locations, setLocations] = useState([]);
 
-  // Filter out 'All' from locations for property listing
-  const locations = LOCATIONS.filter(loc => loc !== 'All');
+  useEffect(() => {
+    try {
+      const popularCities = [
+        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 
+        'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
+        'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte',
+        'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Boston',
+        'Miami', 'Atlanta', 'Las Vegas', 'Portland', 'Nashville',
+        'Detroit', 'Memphis', 'Louisville', 'Baltimore', 'Milwaukee',
+        'Orlando', 'Tampa', 'Minneapolis', 'Cleveland', 'Raleigh'
+      ];
+      
+      const allCitiesData = [];
+      popularCities.forEach(cityName => {
+        const results = searchCities(cityName);
+        if (results && results.length > 0) {
+          allCitiesData.push(...results);
+        }
+      });
+      
+      const formattedCities = allCitiesData
+        .filter((city, index, self) => {
+          const cityName = city.name || city.city || city.City;
+          const stateName = city.state || city.state_name || city.State;
+          return index === self.findIndex(c => {
+            const cName = c.name || c.city || c.City;
+            const sName = c.state || c.state_name || c.State;
+            return cName === cityName && sName === stateName;
+          });
+        })
+        .map(city => {
+          const cityName = city.name || city.city || city.City || 'Unknown';
+          const stateName = city.state || city.state_name || city.State || 'Unknown';
+          return `${cityName}, ${stateName}`;
+        })
+        .sort();
+      
+      setLocations(formattedCities);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+      setLocations(['New York, New York']);
+    }
+  }, []);
+
   const propertyTypes = PROPERTY_TYPES.filter(type => type !== 'All');
 
   const handleChange = (field, value) => {
@@ -79,8 +123,8 @@ const AddProperty = ({ onAddProperty, onCancel }) => {
               value={formData.location} 
               onChange={(e) => handleChange('location', e.target.value)}
             >
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
+              {locations.map((loc, index) => (
+                <option key={`${loc}-${index}`} value={loc}>{loc}</option>
               ))}
             </select>
           </FilterPanel.Group>

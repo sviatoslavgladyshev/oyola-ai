@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FilterPanel from '../ui/FilterPanel';
 import Button from '../ui/Button';
+import { searchCities } from '@mardillu/us-cities-utils';
 import { 
-  LOCATIONS, 
   PROPERTY_TYPES, 
   FINANCING_TYPES, 
   CLOSING_TIMELINES, 
@@ -14,7 +14,7 @@ import {
 const OfferForm = ({ user, onSubmitOffer }) => {
   const [formData, setFormData] = useState({
     // Property Criteria
-    location: 'All',
+    location: 'All Locations',
     type: 'All',
     minPrice: '',
     maxPrice: '',
@@ -31,6 +31,51 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    try {
+      const popularCities = [
+        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 
+        'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
+        'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte',
+        'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Boston',
+        'Miami', 'Atlanta', 'Las Vegas', 'Portland', 'Nashville',
+        'Detroit', 'Memphis', 'Louisville', 'Baltimore', 'Milwaukee',
+        'Orlando', 'Tampa', 'Minneapolis', 'Cleveland', 'Raleigh'
+      ];
+      
+      const allCitiesData = [];
+      popularCities.forEach(cityName => {
+        const results = searchCities(cityName);
+        if (results && results.length > 0) {
+          allCitiesData.push(...results);
+        }
+      });
+      
+      const formattedCities = allCitiesData
+        .filter((city, index, self) => {
+          const cityName = city.name || city.city || city.City;
+          const stateName = city.state || city.state_name || city.State;
+          return index === self.findIndex(c => {
+            const cName = c.name || c.city || c.City;
+            const sName = c.state || c.state_name || c.State;
+            return cName === cityName && sName === stateName;
+          });
+        })
+        .map(city => {
+          const cityName = city.name || city.city || city.City || 'Unknown';
+          const stateName = city.state || city.state_name || city.State || 'Unknown';
+          return `${cityName}, ${stateName}`;
+        })
+        .sort();
+      
+      setLocations(['All Locations', ...formattedCities]);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+      setLocations(['All Locations']);
+    }
+  }, []);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
@@ -90,9 +135,8 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
   return (
     <form onSubmit={handleSubmit} className="offer-form">
-      <FilterPanel title="🏡 Automated Property Offer System">
+      <FilterPanel title="Automated Property Offer System">
         <div className="buyer-info-banner">
-          <div className="banner-icon">👤</div>
           <div>
             <strong>Submitting as: {user.name}</strong>
             <p>{user.email} {user.phone && `• ${user.phone}`}</p>
@@ -107,8 +151,8 @@ const OfferForm = ({ user, onSubmitOffer }) => {
               value={formData.location} 
               onChange={(e) => handleChange('location', e.target.value)}
             >
-              {LOCATIONS.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
+              {locations.map((loc, index) => (
+                <option key={`${loc}-${index}`} value={loc}>{loc}</option>
               ))}
             </select>
           </FilterPanel.Group>
@@ -251,7 +295,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
             className="submit-button"
             disabled={isSubmitting}
           >
-            {isSubmitting ? '🔄 Finding & Contacting Owners...' : '🚀 Find Properties & Send Offers'}
+            {isSubmitting ? 'Finding & Contacting Owners...' : 'Find Properties & Send Offers'}
           </Button>
           <p className="disclaimer">
             By submitting, you authorize us to send your offer to all property owners matching your criteria.
