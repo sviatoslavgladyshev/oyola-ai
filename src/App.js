@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HiCog, HiCheck } from 'react-icons/hi';
+import { HiCheck } from 'react-icons/hi';
 import OfferForm from './components/features/OfferForm';
 import OfferResults from './components/features/OfferResults';
 import OfferDetail from './components/features/OfferDetail';
@@ -252,40 +252,6 @@ function App() {
             </>
           )}
         </main>
-
-        <div className="info-banner animate-on-load">
-          <h3><HiCog size={28} style={{ display: 'inline-block', marginRight: '8px' }} /> How It Works</h3>
-          <div className="steps">
-            <div className="step">
-              <div className="step-number">1</div>
-              <div className="step-content">
-                <h4>Enter Your Criteria</h4>
-                <p>Specify property type, location, budget, and offer details</p>
-              </div>
-            </div>
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-content">
-                <h4>Automatic Matching</h4>
-                <p>Our system finds all properties matching your requirements</p>
-              </div>
-            </div>
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-content">
-                <h4>Contact Owners</h4>
-                <p>We automatically reach out to all property owners with your offer</p>
-              </div>
-            </div>
-            <div className="step">
-              <div className="step-number">4</div>
-              <div className="step-content">
-                <h4>Track Responses</h4>
-                <p>Monitor which owners view, accept, or decline your offer</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
