@@ -135,14 +135,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
 
   return (
     <form onSubmit={handleSubmit} className="offer-form">
-      <FilterPanel title="Automated Property Offer System">
-        <div className="buyer-info-banner">
-          <div>
-            <strong>Submitting as: {user.name}</strong>
-            <p>{user.email} {user.phone && `• ${user.phone}`}</p>
-          </div>
-        </div>
-
+      <FilterPanel title="Offers">
         <div className="form-section">
           <h3 className="section-title">Property Criteria</h3>
           

@@ -1,15 +1,11 @@
-import { searchCities, getStates, getCities, getCitiesBySateName } from '@mardillu/us-cities-utils';
+import { searchCities, getCities, getCitiesBySateName } from '@mardillu/us-cities-utils';
 
 /**
- * Load initial list of locations (states and popular cities)
+ * Load initial list of popular cities
  */
 export const loadInitialLocations = () => {
   try {
-    // Get all states first
-    const states = getStates();
-    console.log('States loaded:', states.length);
-    
-    // Build a comprehensive list by searching for cities
+    // Build a comprehensive list by searching for popular cities
     // Since we can't load all cities at once efficiently, we'll start with popular cities
     // and let the user search for specific ones
     const popularCities = [
@@ -60,21 +56,8 @@ export const loadInitialLocations = () => {
       })
       .sort((a, b) => a.value.localeCompare(b.value));
     
-    // Format states for the dropdown
-    const formattedStates = states.map(state => ({
-      value: state.name,
-      city: '',
-      state: state.name,
-      stateCode: state.code || state.id || '',
-      type: 'state'
-    })).sort((a, b) => a.value.localeCompare(b.value));
-    
-    // Add "All Locations" at the beginning, then states, then cities
-    return [
-      { value: 'All Locations', city: 'All', state: 'Locations', stateCode: 'ALL', type: 'all' },
-      ...formattedStates,
-      ...formattedCities
-    ];
+    // Return only popular cities (no states)
+    return formattedCities;
   } catch (error) {
     console.error('Error loading cities:', error);
     // Return a fallback list if the library fails
