@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import FilterPanel from '../ui/FilterPanel';
-import Button from '../ui/Button';
+// Removed unused imports
 import { searchCities } from '@mardillu/us-cities-utils';
 import { 
   PROPERTY_TYPES, 
   FINANCING_TYPES, 
   CLOSING_TIMELINES, 
-  CONTINGENCY_OPTIONS, 
   BEDROOM_OPTIONS, 
   BATHROOM_OPTIONS 
 } from '../../config/constants';
 
-const OfferForm = ({ user, onSubmitOffer }) => {
+const OfferForm = ({ user, onSubmitOffer, selectedCity }) => {
   const [formData, setFormData] = useState({
     // Property Criteria
-    location: 'All Locations',
+    location: selectedCity ? `${selectedCity.name}, ${selectedCity.state}` : 'All Locations',
+    intent: 'Long-term',
     type: 'All',
     minPrice: '',
     maxPrice: '',
@@ -32,6 +31,16 @@ const OfferForm = ({ user, onSubmitOffer }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [locations, setLocations] = useState([]);
+
+  // Update location when selectedCity changes
+  useEffect(() => {
+    if (selectedCity) {
+      setFormData(prev => ({
+        ...prev,
+        location: `${selectedCity.name}, ${selectedCity.state}`
+      }));
+    }
+  }, [selectedCity]);
 
   useEffect(() => {
     try {
@@ -88,14 +97,7 @@ const OfferForm = ({ user, onSubmitOffer }) => {
     }
   };
 
-  const handleContingencyToggle = (contingency) => {
-    setFormData(prev => {
-      const newContingencies = prev.contingencies.includes(contingency)
-        ? prev.contingencies.filter(c => c !== contingency)
-        : [...prev.contingencies, contingency];
-      return { ...prev, contingencies: newContingencies };
-    });
-  };
+  // contingency toggle reserved for future use
 
   const validateForm = () => {
     const newErrors = {};
@@ -134,167 +136,191 @@ const OfferForm = ({ user, onSubmitOffer }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="offer-form">
-      <FilterPanel title="Offers">
-        <div className="form-section">
-          <h3 className="section-title">Property Criteria</h3>
-          
-          <FilterPanel.Group label="Preferred Location">
+    <form onSubmit={handleSubmit} className="offer-form-simple">
+      <div className="offer-form-header">
+        <h2>🏡 Find Your Dream Home</h2>
+        <p>Tell us what you're looking for and we'll match you with property owners</p>
+      </div>
+
+      <div className="offer-form-card">
+        {/* Intent - Long-term vs Fix & Flip */}
+        <div className="form-field-full">
+          <label>🎯 What are you looking for?</label>
+          <div className="button-group-compact">
+            {['Long-term', 'Fix & Flip'].map(option => (
+              <button
+                key={option}
+                type="button"
+                className={`btn-chip ${formData.intent === option ? 'active' : ''}`}
+                onClick={() => handleChange('intent', option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Location & Property Type - Single Row */}
+        <div className="form-row">
+          <div className="form-field">
+            <label>📍 Location</label>
             <select 
               value={formData.location} 
               onChange={(e) => handleChange('location', e.target.value)}
+              className="form-select"
             >
               {locations.map((loc, index) => (
                 <option key={`${loc}-${index}`} value={loc}>{loc}</option>
               ))}
             </select>
-          </FilterPanel.Group>
+          </div>
 
-          <FilterPanel.Group label="Property Type">
+          <div className="form-field">
+            <label>🏠 Property Type</label>
             <select 
               value={formData.type} 
               onChange={(e) => handleChange('type', e.target.value)}
+              className="form-select"
             >
               {PROPERTY_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
-          </FilterPanel.Group>
+          </div>
+        </div>
 
-          <FilterPanel.Group label="Budget Range *">
-            <FilterPanel.InputGroup>
-              <input
-                type="number"
-                className="form-input"
-                placeholder="Min Budget"
-                value={formData.minPrice}
-                onChange={(e) => handleChange('minPrice', e.target.value)}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                className={`form-input ${errors.maxPrice ? 'error' : ''}`}
-                placeholder="Max Budget *"
-                value={formData.maxPrice}
-                onChange={(e) => handleChange('maxPrice', e.target.value)}
-              />
-            </FilterPanel.InputGroup>
-            {errors.maxPrice && <span className="error-message">{errors.maxPrice}</span>}
-          </FilterPanel.Group>
+        {/* Budget */}
+        <div className="form-field-full">
+          <label>💰 Your Budget *</label>
+          <div className="budget-inputs">
+            <input
+              type="number"
+              className="form-input-modern"
+              placeholder="Min"
+              value={formData.minPrice}
+              onChange={(e) => handleChange('minPrice', e.target.value)}
+            />
+            <span className="range-separator">—</span>
+            <input
+              type="number"
+              className={`form-input-modern ${errors.maxPrice ? 'error' : ''}`}
+              placeholder="Max *"
+              value={formData.maxPrice}
+              onChange={(e) => handleChange('maxPrice', e.target.value)}
+            />
+          </div>
+          {errors.maxPrice && <span className="error-message">{errors.maxPrice}</span>}
+        </div>
 
-          <FilterPanel.Group label="Bedrooms">
-            <FilterPanel.ButtonGroup>
+        {/* Bedrooms & Bathrooms */}
+        <div className="form-row">
+          <div className="form-field">
+            <label>🛏️ Bedrooms</label>
+            <div className="button-group-compact">
               {BEDROOM_OPTIONS.map(bed => (
-                <Button
+                <button
                   key={bed}
                   type="button"
-                  variant="filter"
-                  active={formData.bedrooms === bed}
+                  className={`btn-chip ${formData.bedrooms === bed ? 'active' : ''}`}
                   onClick={() => handleChange('bedrooms', bed)}
                 >
                   {bed}
-                </Button>
+                </button>
               ))}
-            </FilterPanel.ButtonGroup>
-          </FilterPanel.Group>
+            </div>
+          </div>
 
-          <FilterPanel.Group label="Bathrooms">
-            <FilterPanel.ButtonGroup>
+          <div className="form-field">
+            <label>🚿 Bathrooms</label>
+            <div className="button-group-compact">
               {BATHROOM_OPTIONS.map(bath => (
-                <Button
+                <button
                   key={bath}
                   type="button"
-                  variant="filter"
-                  active={formData.bathrooms === bath}
+                  className={`btn-chip ${formData.bathrooms === bath ? 'active' : ''}`}
                   onClick={() => handleChange('bathrooms', bath)}
                 >
                   {bath}
-                </Button>
+                </button>
               ))}
-            </FilterPanel.ButtonGroup>
-          </FilterPanel.Group>
+            </div>
+          </div>
         </div>
 
-        <div className="form-section">
-          <h3 className="section-title">Offer Details</h3>
-          
-          <FilterPanel.Group label="Your Offer Amount *">
-            <input
-              type="number"
-              className={`form-input ${errors.offerAmount ? 'error' : ''}`}
-              placeholder="e.g., 500000"
-              value={formData.offerAmount}
-              onChange={(e) => handleChange('offerAmount', e.target.value)}
-            />
-            {errors.offerAmount && <span className="error-message">{errors.offerAmount}</span>}
-            <small className="helper-text">
-              This offer will be sent to all matching property owners
-            </small>
-          </FilterPanel.Group>
+        <div className="form-divider"></div>
 
-          <FilterPanel.Group label="Financing Type">
+        {/* Offer Amount */}
+        <div className="form-field-full">
+          <label>💵 Your Offer Amount *</label>
+          <input
+            type="number"
+            className={`form-input-modern large ${errors.offerAmount ? 'error' : ''}`}
+            placeholder="Enter your offer amount"
+            value={formData.offerAmount}
+            onChange={(e) => handleChange('offerAmount', e.target.value)}
+          />
+          {errors.offerAmount && <span className="error-message">{errors.offerAmount}</span>}
+        </div>
+
+        {/* Financing & Timeline */}
+        <div className="form-row">
+          <div className="form-field">
+            <label>💳 Financing</label>
             <select 
               value={formData.financingType} 
               onChange={(e) => handleChange('financingType', e.target.value)}
+              className="form-select"
             >
               {FINANCING_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
-          </FilterPanel.Group>
+          </div>
 
-          <FilterPanel.Group label="Desired Closing Timeline">
+          <div className="form-field">
+            <label>📅 Closing Timeline</label>
             <select 
               value={formData.closingTimeline} 
               onChange={(e) => handleChange('closingTimeline', e.target.value)}
+              className="form-select"
             >
               {CLOSING_TIMELINES.map(timeline => (
                 <option key={timeline} value={timeline}>{timeline}</option>
               ))}
             </select>
-          </FilterPanel.Group>
-
-          <FilterPanel.Group label="Contingencies">
-            <FilterPanel.ButtonGroup>
-              {CONTINGENCY_OPTIONS.map(contingency => (
-                <Button
-                  key={contingency}
-                  type="button"
-                  variant="filter"
-                  active={formData.contingencies.includes(contingency)}
-                  onClick={() => handleContingencyToggle(contingency)}
-                >
-                  {contingency}
-                </Button>
-              ))}
-            </FilterPanel.ButtonGroup>
-          </FilterPanel.Group>
-
-          <FilterPanel.Group label="Personal Message to Owner (Optional)">
-            <textarea
-              className="form-textarea"
-              placeholder="Tell the property owner why you're interested in their property..."
-              rows="4"
-              value={formData.offerMessage}
-              onChange={(e) => handleChange('offerMessage', e.target.value)}
-            />
-          </FilterPanel.Group>
+          </div>
         </div>
 
-        <div className="form-actions">
-          <Button 
+        {/* Message */}
+        <div className="form-field-full">
+          <label>✉️ Message to Property Owners (Optional)</label>
+          <textarea
+            className="form-textarea-modern"
+            placeholder="Why are you the perfect buyer for this property?"
+            rows="3"
+            value={formData.offerMessage}
+            onChange={(e) => handleChange('offerMessage', e.target.value)}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="form-submit">
+          <button 
             type="submit" 
-            variant="primary" 
-            className="submit-button"
+            className="btn-submit-modern"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Finding & Contacting Owners...' : 'Find Properties & Send Offers'}
-          </Button>
-          <p className="disclaimer">
-            By submitting, you authorize us to send your offer to all property owners matching your criteria.
+            {isSubmitting ? (
+              <>⏳ Finding Properties...</>
+            ) : (
+              <>🚀 Find Properties & Send Offers</>
+            )}
+          </button>
+          <p className="form-note">
+            We'll send your offer to all matching property owners
           </p>
         </div>
-      </FilterPanel>
+      </div>
     </form>
   );
 };

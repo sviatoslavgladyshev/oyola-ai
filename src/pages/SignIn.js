@@ -11,7 +11,7 @@ const SignIn = ({ onSwitchToSignUp }) => {
     setIsLoading(true);
 
     try {
-      await signInWithGoogle('buyer', true);
+      await signInWithGoogle(null, true);
       // Auth state listener in App.js will handle this
     } catch (err) {
       setError(err.message);
@@ -50,12 +50,7 @@ const SignIn = ({ onSwitchToSignUp }) => {
           {isLoading ? 'Signing in...' : 'Continue with Google'}
         </Button>
 
-        <div className="auth-footer">
-          <p>Don't have an account?</p>
-          <button className="link-button" onClick={onSwitchToSignUp}>
-            Create an account →
-          </button>
-        </div>
+        {/* Sign-up removed: Google sign-in will create accounts automatically if needed */}
       </div>
     </div>
   );

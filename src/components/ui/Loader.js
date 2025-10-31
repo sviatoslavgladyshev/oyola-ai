@@ -18,7 +18,7 @@ const StyledWrapper = styled.div`
   .newtons-cradle {
    --uib-size: 70px;
    --uib-speed: 1.2s;
-   --uib-color: #474554;
+   --uib-color: #60a5fa;
    position: relative;
    display: flex;
    align-items: center;

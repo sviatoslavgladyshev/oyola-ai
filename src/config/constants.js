@@ -4,6 +4,8 @@
 // Property type options
 export const PROPERTY_TYPES = [
   'All',
+  'Long-term',
+  'Fix & Flip',
   'House',
   'Condo',
   'Apartment',
@@ -62,4 +64,8 @@ export const NOTIFICATION_TYPES = {
   WARNING: 'warning',
   INFO: 'info'
 };
+
+// Unsplash API Configuration (for city photos)
+// Get your free API key at: https://unsplash.com/developers
+export const UNSPLASH_ACCESS_KEY = process.env.REACT_APP_UNSPLASH_ACCESS_KEY || 'demo';
 

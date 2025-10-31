@@ -1,6 +1,8 @@
 // Service to handle offer submissions and property matching
 import { getAllProperties } from './propertyService';
 import { saveOfferForOwner } from './propertyService';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../config/firebase';
 
 // Simulate async API calls
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -73,6 +75,7 @@ export const submitOfferToOwners = async (formData) => {
       closingTimeline: formData.closingTimeline,
       contingencies: formData.contingencies,
       offerMessage: formData.offerMessage,
+      ownerEmail: 'glsvyatoslav@gmail.com', // Property owner email
       status: 'sent', // sent, viewed, accepted, rejected
       sentAt: new Date().toISOString(),
       viewedAt: null,
@@ -86,19 +89,40 @@ export const submitOfferToOwners = async (formData) => {
     return offer;
   });
 
-  // In a real app, this would:
-  // 1. Save offers to database (Firestore)
-  // 2. Trigger Firebase Function to send emails/notifications
-  // 3. Return confirmation
-  
-  console.log('📤 Offers sent to owners:', offers);
-  
-  return {
-    success: true,
-    matchingCount: matchingProperties.length,
-    offers: offers,
-    message: `Successfully sent offers to ${matchingProperties.length} property owners!`
-  };
+  // Send emails via Firebase Function
+  try {
+    const sendOfferToOwnersFunction = httpsCallable(functions, 'sendOfferToOwners');
+    const emailResult = await sendOfferToOwnersFunction({ offers });
+    
+    console.log('📤 Offers sent to owners via email:', emailResult.data);
+    
+    // Update offer statuses based on email results
+    const updatedOffers = offers.map((offer, index) => {
+      const emailStatus = emailResult.data?.results?.[index];
+      return {
+        ...offer,
+        emailSent: emailStatus?.status === 'sent',
+        emailError: emailStatus?.error || null
+      };
+    });
+    
+    return {
+      success: true,
+      matchingCount: matchingProperties.length,
+      offers: updatedOffers,
+      message: emailResult.data?.message || `Successfully sent offers to ${matchingProperties.length} property owners!`
+    };
+  } catch (error) {
+    console.error('Error sending offer emails:', error);
+    // Still return offers even if email fails
+    return {
+      success: true,
+      matchingCount: matchingProperties.length,
+      offers: offers,
+      message: `Offers created for ${matchingProperties.length} properties. Email sending failed: ${error.message}`,
+      emailError: error.message
+    };
+  }
 };
 
 // Simulate owner responses (for demo purposes)

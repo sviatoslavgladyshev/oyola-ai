@@ -1,0 +1,135 @@
+[debug] [2025-10-31T16:10:39.636Z] ----------------------------------------------------------------------
+[debug] [2025-10-31T16:10:39.639Z] Command:       /opt/homebrew/Cellar/node@20/20.19.5/bin/node /opt/homebrew/bin/firebase deploy --only functions
+[debug] [2025-10-31T16:10:39.639Z] CLI Version:   14.18.0
+[debug] [2025-10-31T16:10:39.639Z] Platform:      darwin
+[debug] [2025-10-31T16:10:39.639Z] Node Version:  v20.19.5
+[debug] [2025-10-31T16:10:39.639Z] Time:          Sat Nov 01 2025 00:10:39 GMT+0800 (China Standard Time)
+[debug] [2025-10-31T16:10:39.639Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-31T16:10:39.712Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-31T16:10:39.712Z] > authorizing via signed-in user (glsvyatoslav@gmail.com)
+[debug] [2025-10-31T16:10:39.712Z] [iam] checking project oyola-ai for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-10-31T16:10:39.712Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:39.713Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:39.713Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions [none]
+[debug] [2025-10-31T16:10:39.713Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions x-goog-quota-user=projects/oyola-ai
+[debug] [2025-10-31T16:10:39.713Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-10-31T16:10:40.798Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions 200
+[debug] [2025-10-31T16:10:40.798Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-10-31T16:10:40.799Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:40.799Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:40.799Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/oyola-ai/serviceAccounts/oyola-ai@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-10-31T16:10:40.799Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/oyola-ai/serviceAccounts/oyola-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-10-31T16:10:42.231Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/oyola-ai/serviceAccounts/oyola-ai@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2025-10-31T16:10:42.231Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/oyola-ai/serviceAccounts/oyola-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'oyola-ai'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] ✔  functions: Finished running predeploy script. 
+[debug] [2025-10-31T16:10:45.223Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:45.223Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:45.223Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai [none]
+[debug] [2025-10-31T16:10:45.544Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai 200
+[debug] [2025-10-31T16:10:45.544Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai {"projectNumber":"560941459989","projectId":"oyola-ai","lifecycleState":"ACTIVE","name":"oyola-ai","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-10-27T01:46:31.832259Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-10-31T16:10:45.548Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:45.548Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:45.548Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/oyola-ai/adminSdkConfig [none]
+[debug] [2025-10-31T16:10:46.333Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/oyola-ai/adminSdkConfig 200
+[debug] [2025-10-31T16:10:46.333Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/oyola-ai/adminSdkConfig {"projectId":"oyola-ai","storageBucket":"oyola-ai.firebasestorage.app"}
+[debug] [2025-10-31T16:10:46.334Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.334Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.334Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs [none]
+[debug] [2025-10-31T16:10:46.879Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs 200
+[debug] [2025-10-31T16:10:46.879Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs {"configs":[{"name":"projects/oyola-ai/configs/resend"},{"name":"projects/oyola-ai/configs/rapidapi"}]}
+[debug] [2025-10-31T16:10:46.880Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.880Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.880Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.880Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:46.880Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables [none]
+[debug] [2025-10-31T16:10:46.880Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables [none]
+[debug] [2025-10-31T16:10:47.177Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables 200
+[debug] [2025-10-31T16:10:47.177Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables {"variables":[{"name":"projects/oyola-ai/configs/resend/variables/api_key","updateTime":"2025-10-27T07:37:11.832775933Z"}]}
+[debug] [2025-10-31T16:10:47.178Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:47.178Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:47.178Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables/api_key [none]
+[debug] [2025-10-31T16:10:47.370Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables 200
+[debug] [2025-10-31T16:10:47.370Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables {"variables":[{"name":"projects/oyola-ai/configs/rapidapi/variables/key","updateTime":"2025-10-31T06:04:10.877365803Z"}]}
+[debug] [2025-10-31T16:10:47.370Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:47.370Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:47.371Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables/key [none]
+[debug] [2025-10-31T16:10:47.470Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables/api_key 200
+[debug] [2025-10-31T16:10:47.470Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/resend/variables/api_key {"name":"projects/oyola-ai/configs/resend/variables/api_key","updateTime":"2025-10-27T07:37:11.832775933Z","text":"re_FrEqdEra_3WDfm5UoCofazvVcZswSZk6t"}
+[debug] [2025-10-31T16:10:47.658Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables/key 200
+[debug] [2025-10-31T16:10:47.658Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/oyola-ai/configs/rapidapi/variables/key {"name":"projects/oyola-ai/configs/rapidapi/variables/key","updateTime":"2025-10-31T06:04:10.877365803Z","text":"521614d967msh560ea168384bb43p1cb256jsnef0f86f252ef"}
+[debug] [2025-10-31T16:10:47.659Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-10-31T16:10:48.858Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^5.1.0",
+    "googleapis": "^164.1.0",
+    "resend": "^6.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-10-31T16:10:48.858Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2025-10-31T16:10:48.859Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-10-31T16:10:48.869Z] Found firebase-functions binary at '/Volumes/DevelopmentSSD/oyola-ai/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8699
+
+[debug] [2025-10-31T16:10:49.546Z] Got response from /__/functions.yaml {"endpoints":{"sendOfferToOwners":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendOfferToOwners"},"trackOfferView":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"trackOfferView"},"respondToOffer":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"respondToOffer"},"sendOfferFollowUps":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"sendOfferFollowUps"},"sendWelcomeEmail":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.created","eventFilters":{"database":"(default)","namespace":"(default)"},"eventFilterPathPatterns":{"document":"users/{userId}"},"retry":false},"entryPoint":"sendWelcomeEmail"},"scheduledZillowFetch":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every 6 hours","retryConfig":{},"timeZone":"America/Los_Angeles"},"entryPoint":"scheduledZillowFetch"},"fetchZillowPropertiesManual":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"fetchZillowPropertiesManual"},"getImportStats":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getImportStats"},"getGmailAuthUrl":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getGmailAuthUrl"},"exchangeGmailAuthCode":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"exchangeGmailAuthCode"},"refreshGmailToken":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"refreshGmailToken"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2025-10-31T16:10:53.570Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-31T16:10:53.570Z] > authorizing via signed-in user (glsvyatoslav@gmail.com)
+[debug] [2025-10-31T16:10:53.570Z] [iam] checking project oyola-ai for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2025-10-31T16:10:53.570Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:53.570Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:53.570Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions [none]
+[debug] [2025-10-31T16:10:53.570Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions x-goog-quota-user=projects/oyola-ai
+[debug] [2025-10-31T16:10:53.570Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-10-31T16:10:54.656Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions 200
+[debug] [2025-10-31T16:10:54.656Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/oyola-ai:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-10-31T16:10:54.657Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:54.657Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:54.658Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/oyola-ai/instances pageSize=100&pageToken=
+[debug] [2025-10-31T16:10:55.934Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/oyola-ai/instances 200
+[debug] [2025-10-31T16:10:55.935Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/oyola-ai/instances {}
+[info] i  functions: Loaded environment variables from .env. 
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged /Volumes/DevelopmentSSD/oyola-ai/functions (96.28 KB) for uploading 
+[debug] [2025-10-31T16:10:55.962Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:55.962Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:55.962Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/oyola-ai/locations/-/functions [none]
+[debug] [2025-10-31T16:10:56.998Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/oyola-ai/locations/-/functions 200
+[debug] [2025-10-31T16:10:56.998Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/oyola-ai/locations/-/functions {}
+[debug] [2025-10-31T16:10:56.999Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:56.999Z] Checked if tokens are valid: true, expires at: 1761927971493
+[debug] [2025-10-31T16:10:56.999Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/oyola-ai/locations/-/functions filter=environment%3D%22GEN_2%22

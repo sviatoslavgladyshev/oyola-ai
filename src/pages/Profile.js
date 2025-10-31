@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../components/ui/Button';
-import { updateProfile, changePassword } from '../services/authService';
+import { updateProfile, changePassword, authorizeGmailAccess, getCurrentUser } from '../services/authService';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const Profile = ({ user, onUpdateUser, onClose }) => {
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'security'
@@ -17,6 +19,38 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
   });
   const [notification, setNotification] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnectingGmail, setIsConnectingGmail] = useState(false);
+  const [gmailConnected, setGmailConnected] = useState(user?.gmail?.connected || false);
+
+  // Check Gmail connection status on mount and when user changes
+  useEffect(() => {
+    const checkGmailStatus = async () => {
+      try {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const isConnected = userData?.gmail?.connected === true;
+            setGmailConnected(isConnected);
+            // Update parent component's user data if it changed
+            if (onUpdateUser && isConnected !== user?.gmail?.connected) {
+              onUpdateUser({ ...currentUser, ...userData });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking Gmail status:', error);
+      }
+    };
+    
+    checkGmailStatus();
+    
+    // Also update from user prop if available
+    if (user?.gmail?.connected === true) {
+      setGmailConnected(true);
+    }
+  }, [user, user?.gmail?.connected, onUpdateUser]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -37,6 +71,18 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
       showNotification(error.message, 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleConnectGmail = async () => {
+    setIsConnectingGmail(true);
+    try {
+      await authorizeGmailAccess();
+      // If redirect happens, this won't execute, which is fine
+    } catch (error) {
+      setIsConnectingGmail(false);
+      showNotification('Failed to connect Gmail. Please try again.', 'error');
+      console.error('Failed to start Gmail auth', error);
     }
   };
 
@@ -194,6 +240,43 @@ const Profile = ({ user, onUpdateUser, onClose }) => {
                   ) : (
                     <Button variant="primary" onClick={() => setIsEditing(true)}>
                       ✏️ Edit Profile
+                    </Button>
+                  )}
+                </div>
+
+                {/* Email Integrations */}
+                <div className="integration-section">
+                  <h4>📧 Email Integrations</h4>
+                  <p className="section-description">Connect Gmail to compose emails to property owners directly.</p>
+                  {gmailConnected || user?.gmail?.connected ? (
+                    <div className="integration-status success">✅ Gmail connected</div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      className="connect-gmail-button"
+                      id="connect-gmail-button"
+                      data-autoconnect="1"
+                      onClick={handleConnectGmail}
+                      disabled={isConnectingGmail}
+                    >
+                      {isConnectingGmail ? (
+                        <>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '14px',
+                            height: '14px',
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            borderTopColor: 'white',
+                            borderRadius: '50%',
+                            animation: 'spin 0.8s linear infinite',
+                            marginRight: '8px',
+                            verticalAlign: 'middle'
+                          }}></span>
+                          Connecting...
+                        </>
+                      ) : (
+                        '✉️ Connect Gmail'
+                      )}
                     </Button>
                   )}
                 </div>

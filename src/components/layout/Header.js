@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX } from 'react-icons/hi';
+import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus } from 'react-icons/hi';
 import { loadInitialLocations, searchLocations, filterLoadedLocations } from '../../utils/locationSearch';
 
 const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, offersCount, onLocationChange }) => {
@@ -379,6 +379,13 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                     <div className="mobile-menu-section">
                       <div className="mobile-menu-label">Navigate</div>
                       <button 
+                        className={`mobile-menu-item ${view === 'dashboard' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('dashboard')}
+                      >
+                        <HiLocationMarker size={20} />
+                        <span>Dashboard</span>
+                      </button>
+                      <button 
                         className={`mobile-menu-item ${view === 'form' ? 'active' : ''}`}
                         onClick={() => handleViewChange('form')}
                       >
@@ -540,6 +547,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
 
   // Desktop Header Layout
   return (
+    <>
     <header className="app-header desktop-header">
       <div className="header-content">
         <div className="header-left">
@@ -666,26 +674,6 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
           </form>
         </div>
         
-        {user && user.role !== 'owner' && onViewChange && (
-          <div className="header-nav">
-            <button 
-              className={`header-nav-button ${view === 'form' ? 'active' : ''}`}
-              onClick={() => onViewChange('form')}
-            >
-              <HiDocumentText size={20} />
-              <span>Submit Offer</span>
-            </button>
-            <button 
-              className={`header-nav-button ${view === 'results' || view === 'detail' ? 'active' : ''}`}
-              onClick={() => onViewChange('results')}
-              disabled={!offersCount || offersCount === 0}
-            >
-              <HiPresentationChartBar size={20} />
-              <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
-            </button>
-          </div>
-        )}
-        
         {user && (
           <div className="header-right">
             <div className="user-menu" ref={userMenuRef}>
@@ -745,6 +733,37 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
         )}
       </div>
     </header>
+    {user && user.role !== 'owner' && onViewChange && (
+      <div className="sub-header">
+        <div className="sub-header-content">
+          <div className="sub-header-nav">
+            <button 
+              className={`header-nav-button ${view === 'dashboard' ? 'active' : ''}`}
+              onClick={() => onViewChange('dashboard')}
+            >
+              <HiLocationMarker size={18} />
+              <span>Dashboard</span>
+            </button>
+            <button 
+              className={`header-nav-button ${view === 'results' || view === 'detail' ? 'active' : ''}`}
+              onClick={() => onViewChange('results')}
+              disabled={!offersCount || offersCount === 0}
+            >
+              <HiPresentationChartBar size={20} />
+              <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
+            </button>
+          </div>
+          <button 
+            className={`add-offer-button ${view === 'form' ? 'active' : ''}`}
+            onClick={() => onViewChange('form')}
+          >
+            <HiPlus size={18} />
+            <span>Add Offer</span>
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

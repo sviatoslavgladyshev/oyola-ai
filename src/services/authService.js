@@ -1,4 +1,5 @@
-import { auth, db } from '../config/firebase';
+import { auth, db, functions } from '../config/firebase';
+import { httpsCallable } from 'firebase/functions';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -11,6 +12,8 @@ import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence
@@ -125,7 +128,7 @@ export const signOut = async () => {
 };
 
 // Sign in with Google
-export const signInWithGoogle = async (role = 'buyer', rememberMe = true) => {
+export const signInWithGoogle = async (role = null, rememberMe = true) => {
   try {
     // Set persistence based on rememberMe preference
     await setPersistence(
@@ -134,25 +137,59 @@ export const signInWithGoogle = async (role = 'buyer', rememberMe = true) => {
     );
 
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    let result;
+    try {
+      result = await signInWithPopup(auth, provider);
+    } catch (popupError) {
+      if (
+        popupError?.code === 'auth/popup-closed-by-user' ||
+        popupError?.code === 'auth/cancelled-popup-request' ||
+        popupError?.code === 'auth/popup-blocked'
+      ) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw popupError;
+    }
     const user = result.user;
 
+    // Extract Google OAuth credential/access token
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken || null;
+
     // Check if user document exists
+
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-      // Create user document for new Google sign-in users
+      // Create user document for new Google sign-in users without role; collect it post-login
       await setDoc(userDocRef, {
         email: user.email,
         name: user.displayName,
-        role: role,
+        role: '',
         phone: '',
         photoURL: user.photoURL,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
     }
+
+    // Persist Google token info to the user's Firestore document
+    await setDoc(
+      userDocRef,
+      {
+        gmail: {
+          accessToken,
+          providerId: credential?.providerId || 'google.com',
+          storedAt: new Date().toISOString()
+        },
+        updatedAt: new Date().toISOString()
+      },
+      { merge: true }
+    );
 
     // Return combined user object with Firestore data
     return getUserProfile(user);
@@ -167,6 +204,132 @@ export const signInWithGoogle = async (role = 'buyer', rememberMe = true) => {
     } else {
       throw new Error(error.message || 'Failed to sign in with Google');
     }
+  }
+};
+
+// Handle redirect result to capture and store the Google access token after redirect sign-in
+export const processGoogleRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result) return null;
+
+    const user = result.user;
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken || null;
+
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+      await setDoc(userDocRef, {
+        email: user.email,
+        name: user.displayName,
+        role: '',
+        phone: '',
+        photoURL: user.photoURL,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    await setDoc(
+      userDocRef,
+      {
+        gmail: {
+          accessToken,
+          scope: 'https://www.googleapis.com/auth/gmail.compose',
+          providerId: credential?.providerId || 'google.com',
+          storedAt: new Date().toISOString()
+        },
+        updatedAt: new Date().toISOString()
+      },
+      { merge: true }
+    );
+
+    return user;
+  } catch (error) {
+    // Ignore case where there is no redirect/pending result
+    if (error?.code === 'auth/no-auth-event') return null;
+    throw error;
+  }
+};
+
+/**
+ * Get Gmail OAuth authorization URL from server (for refresh tokens)
+ * This initiates the server-side OAuth flow that provides refresh tokens
+ */
+export const getGmailAuthUrl = async () => {
+  try {
+    const getGmailAuthUrlFunction = httpsCallable(functions, 'getGmailAuthUrl');
+    // Pass the current origin as redirect URI to fix redirect_uri_mismatch error
+    // Ensure no trailing slash for exact match with Google OAuth Console
+    const redirectUri = window.location.origin.replace(/\/$/, '');
+    console.log('Gmail OAuth - Using redirect URI:', redirectUri);
+    console.log('Gmail OAuth - Full URL:', window.location.href);
+    const result = await getGmailAuthUrlFunction({ redirectUri });
+    // Store redirectUri in sessionStorage so exchange can use it
+    sessionStorage.setItem('gmail_redirect_uri', redirectUri);
+    console.log('Gmail OAuth - Auth URL generated:', result.data.authUrl);
+    return result.data.authUrl;
+  } catch (error) {
+    console.error('Error getting Gmail auth URL:', error);
+    throw new Error(error.message || 'Failed to get Gmail authorization URL');
+  }
+};
+
+/**
+ * Exchange Gmail OAuth authorization code for tokens (with refresh token)
+ * This completes the server-side OAuth flow
+ */
+export const exchangeGmailAuthCode = async (code, state) => {
+  try {
+    const exchangeGmailAuthCodeFunction = httpsCallable(functions, 'exchangeGmailAuthCode');
+    // Get the redirect URI that was used for the auth URL
+    let redirectUri = sessionStorage.getItem('gmail_redirect_uri') || window.location.origin;
+    // Ensure no trailing slash for exact match
+    redirectUri = redirectUri.replace(/\/$/, '');
+    console.log('Gmail OAuth Exchange - Using redirect URI:', redirectUri);
+    const result = await exchangeGmailAuthCodeFunction({ code, state, redirectUri });
+    // Clean up stored redirect URI
+    sessionStorage.removeItem('gmail_redirect_uri');
+    return result.data;
+  } catch (error) {
+    console.error('Error exchanging Gmail auth code:', error);
+    sessionStorage.removeItem('gmail_redirect_uri');
+    throw new Error(error.message || 'Failed to exchange authorization code');
+  }
+};
+
+/**
+ * Refresh Gmail access token using stored refresh token
+ */
+export const refreshGmailToken = async () => {
+  try {
+    const refreshGmailTokenFunction = httpsCallable(functions, 'refreshGmailToken');
+    const result = await refreshGmailTokenFunction();
+    return result.data;
+  } catch (error) {
+    console.error('Error refreshing Gmail token:', error);
+    throw new Error(error.message || 'Failed to refresh token');
+  }
+};
+
+/**
+ * Initiate Gmail OAuth flow with refresh token support
+ * Redirects user to Google OAuth consent screen
+ */
+export const authorizeGmailAccess = async () => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      throw new Error('You must be signed in to authorize Gmail access');
+    }
+
+    const authUrl = await getGmailAuthUrl();
+    // Redirect to Google OAuth consent screen
+    window.location.href = authUrl;
+  } catch (error) {
+    console.error('Error initiating Gmail authorization:', error);
+    throw error;
   }
 };
 
