@@ -75,7 +75,7 @@ export const submitOfferToOwners = async (formData) => {
       closingTimeline: formData.closingTimeline,
       contingencies: formData.contingencies,
       offerMessage: formData.offerMessage,
-      ownerEmail: 'glsvyatoslav@gmail.com', // Property owner email
+      ownerEmail: 'sg7622@nyu.edu', // Property owner email
       status: 'sent', // sent, viewed, accepted, rejected
       sentAt: new Date().toISOString(),
       viewedAt: null,
@@ -122,6 +122,29 @@ export const submitOfferToOwners = async (formData) => {
       message: `Offers created for ${matchingProperties.length} properties. Email sending failed: ${error.message}`,
       emailError: error.message
     };
+  }
+};
+
+// Send follow-up email for a specific offer
+export const sendFollowUpEmail = async (offer) => {
+  try {
+    if (!offer) {
+      throw new Error('Offer is required');
+    }
+
+    const sendFollowUpFunction = httpsCallable(functions, 'sendOfferFollowUps');
+    const result = await sendFollowUpFunction({ offer });
+    
+    console.log('📧 Follow-up email sent:', result.data);
+    
+    return {
+      success: true,
+      message: result.data?.message || 'Follow-up email sent successfully',
+      sentAt: result.data?.sentAt || new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error sending follow-up email:', error);
+    throw new Error(error.message || 'Failed to send follow-up email');
   }
 };
 

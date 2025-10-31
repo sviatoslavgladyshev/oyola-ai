@@ -94,7 +94,7 @@ const sendEmailViaGmail = async (buyerId, toEmail, subject, htmlBody) => {
     const db = admin.firestore();
     const userDoc = await db.collection("users").doc(buyerId).get();
 
-    if (!userDoc.exists()) {
+    if (!userDoc.exists) {
       throw new Error("User not found");
     }
 
@@ -274,7 +274,7 @@ exports.sendOfferToOwners = onCall(async (request) => {
     const results = await Promise.all(
         offers.map(async (offer) => {
           try {
-            const ownerEmail = offer.ownerEmail || "glsvyatoslav@gmail.com";
+            const ownerEmail = offer.ownerEmail || "sg7622@nyu.edu";
             const propertyAddress = offer.property?.address ||
                 offer.property?.title || "Property";
             const offerAmount = offer.offerAmount ?
@@ -497,20 +497,162 @@ exports.respondToOffer = onCall(async (request) => {
 });
 
 /**
- * Example function to send automated follow-ups
+ * Send follow-up email for a specific offer
+ * This function sends a reminder email to property owners about an offer
  */
-exports.sendOfferFollowUps = onRequest(async (req, res) => {
-  logger.info("Running automated follow-up checks");
+exports.sendOfferFollowUps = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new HttpsError(
+          "unauthenticated",
+          "Authentication required",
+      );
+    }
 
-  // In a real implementation, this would:
-  // 1. Query Firestore for offers sent > 48 hours ago with no response
-  // 2. Send reminder emails to property owners
-  // 3. Update offer with follow-up timestamp
+    const buyerId = request.auth.uid;
+    const {offer} = request.data;
 
-  res.send({
-    success: true,
-    message: "Follow-up checks completed",
-  });
+    if (!offer) {
+      throw new HttpsError(
+          "invalid-argument",
+          "Offer object is required",
+      );
+    }
+
+    logger.info("Sending follow-up email for offer", {
+      offerId: offer.id,
+      buyerId: buyerId,
+    });
+
+    const ownerEmail = offer.ownerEmail || "glsvyatoslav@gmail.com";
+    const propertyAddress = offer.property?.address ||
+        offer.property?.title || "Property";
+    const offerAmount = offer.offerAmount ?
+      `$${offer.offerAmount.toLocaleString()}` : "N/A";
+    const propertyPrice = offer.property?.price ?
+      `$${offer.property.price.toLocaleString()}` : "N/A";
+
+    // Create HTML email body for follow-up
+    const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+    .offer-details { background: white; padding: 20px; border-radius: 8px; 
+                     margin: 20px 0; border-left: 4px solid #667eea; }
+    .detail-row { display: flex; justify-content: space-between; 
+                  padding: 10px 0; border-bottom: 1px solid #eee; }
+    .detail-row:last-child { border-bottom: none; }
+    .label { font-weight: 600; color: #666; }
+    .value { color: #333; }
+    .offer-amount { font-size: 24px; font-weight: 700; color: #667eea; }
+    .followup-note { background: #fff3cd; padding: 15px; border-radius: 6px; 
+                     margin: 20px 0; border-left: 4px solid #ffc107; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📧 Follow-up: Property Offer Reminder</h1>
+    </div>
+    <div class="content">
+      <p>Hello,</p>
+      <p>This is a friendly follow-up regarding the purchase offer ` +
+        `you received:</p>
+      
+      <div class="followup-note">
+        <strong>💬 Reminder:</strong> We wanted to make sure you ` +
+        `received and had a chance to review this offer.
+      </div>
+      
+      <div class="offer-details">
+        <div class="detail-row">
+          <span class="label">Property:</span>
+          <span class="value"><strong>${propertyAddress}</strong></span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Asking Price:</span>
+          <span class="value">${propertyPrice}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Offer Amount:</span>
+          <span class="offer-amount">${offerAmount}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Buyer:</span>
+          <span class="value">${offer.buyerName || "N/A"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Buyer Email:</span>
+          <span class="value">${offer.buyerEmail || "N/A"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Buyer Phone:</span>
+          <span class="value">${offer.buyerPhone || "N/A"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Financing Type:</span>
+          <span class="value">${offer.financingType || "N/A"}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Closing Timeline:</span>
+          <span class="value">${offer.closingTimeline || "N/A"}</span>
+        </div>
+      </div>
+
+      ${offer.offerMessage ? `
+      <div class="offer-details">
+        <h3>Message from Buyer:</h3>
+        <p>${offer.offerMessage}</p>
+      </div>
+      ` : ""}
+
+      <p>If you have any questions or would like to discuss this offer ` +
+        `further, please don't hesitate to reach out.</p>
+      
+      <p>Best regards,<br>${offer.buyerName || "The Buyer"}</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const subject =
+        `Follow-up: Purchase Offer for ${propertyAddress} - ${offerAmount}`;
+
+    // Send email via Gmail
+    await sendEmailViaGmail(buyerId, ownerEmail, subject, htmlBody);
+
+    logger.info("Follow-up email sent successfully", {
+      offerId: offer.id,
+      propertyTitle: propertyAddress,
+      offerAmount: offerAmount,
+      ownerEmail: ownerEmail,
+    });
+
+    return {
+      success: true,
+      message: "Follow-up email sent successfully",
+      sentAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    logger.error("Error sending follow-up email", error);
+    throw new HttpsError(
+        "internal",
+        error.message || "Failed to send follow-up email",
+    );
+  }
 });
 
 /**
@@ -1414,7 +1556,7 @@ exports.refreshGmailToken = onCall(async (request) => {
     const db = admin.firestore();
     const userDoc = await db.collection("users").doc(userId).get();
 
-    if (!userDoc.exists()) {
+    if (!userDoc.exists) {
       throw new HttpsError(
           "not-found",
           "User not found",

@@ -1,9 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { formatPrice, getOfferStatusColor, getOfferStatusIcon } from '../../utils/formatters';
+import { sendFollowUpEmail } from '../../services/offerService';
 
-const OfferDetail = ({ offer, onBack }) => {
+const OfferDetail = ({ offer, onBack, onShowNotification }) => {
+  const [isSendingFollowUp, setIsSendingFollowUp] = useState(false);
+
+  const handleSendFollowUp = async () => {
+    if (!offer) return;
+
+    setIsSendingFollowUp(true);
+    try {
+      const result = await sendFollowUpEmail(offer);
+      if (onShowNotification) {
+        onShowNotification(result.message || 'Follow-up email sent successfully!', 'success');
+      } else {
+        alert('✅ Follow-up email sent successfully!');
+      }
+    } catch (error) {
+      console.error('Error sending follow-up:', error);
+      if (onShowNotification) {
+        onShowNotification(error.message || 'Failed to send follow-up email. Please try again.', 'error');
+      } else {
+        alert('❌ ' + (error.message || 'Failed to send follow-up email. Please try again.'));
+      }
+    } finally {
+      setIsSendingFollowUp(false);
+    }
+  };
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -256,8 +281,12 @@ const OfferDetail = ({ offer, onBack }) => {
       <div className="detail-actions">
         {offer.status === 'sent' || offer.status === 'viewed' ? (
           <>
-            <Button variant="primary">
-              📧 Send Follow-up Message
+            <Button 
+              variant="primary" 
+              onClick={handleSendFollowUp}
+              disabled={isSendingFollowUp}
+            >
+              {isSendingFollowUp ? '⏳ Sending...' : '📧 Send Follow-up Message'}
             </Button>
             <Button variant="reset">
               ❌ Withdraw Offer

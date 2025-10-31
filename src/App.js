@@ -609,6 +609,7 @@ function App() {
             <OfferDetail 
               offer={selectedOffer} 
               onBack={handleBackToResults}
+              onShowNotification={showNotification}
             />
           ) : (
             <>
