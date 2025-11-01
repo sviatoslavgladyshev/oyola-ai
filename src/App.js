@@ -9,6 +9,7 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import SignIn from './pages/SignIn';
 // SignUp removed from auth flow
 import Profile from './pages/Profile';
+import HandsontablePage from './pages/Handsontable';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Notification from './components/layout/Notification';
@@ -448,9 +449,12 @@ function App() {
         />
       )}
 
-      <div className="container-single">
-        <main className="main-content-single">
-          {view === 'dashboard' ? (
+      {view === 'handsontable' ? (
+        <HandsontablePage />
+      ) : (
+        <div className="container-single">
+          <main className="main-content-single">
+            {view === 'dashboard' ? (
             <div className="dashboard-layout">
               {showPostLoginPrompt && (
                 <div className="buyer-info-banner" style={{ marginBottom: 16 }}>
@@ -625,8 +629,9 @@ function App() {
               </div>
             </>
           )}
-        </main>
-      </div>
+          </main>
+        </div>
+      )}
       <Footer />
     </div>
   );

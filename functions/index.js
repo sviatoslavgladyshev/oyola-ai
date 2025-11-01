@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+// const functions = require("firebase-functions"); // Not needed for v2
 const {onCall, onRequest, HttpsError} =
   require("firebase-functions/v2/https");
 const {onDocumentCreated} =
@@ -14,49 +14,70 @@ const axios = require("axios");
 admin.initializeApp();
 
 // Get environment variables (v2-ready).
-// Prefer process.env; fallback to legacy config()
+// Using only process.env for Firebase Functions v2 compatibility
 const getResendApiKey = () => {
-  return process.env.RESEND_API_KEY || functions.config().resend?.api_key || "";
+  return process.env.RESEND_API_KEY || "";
 };
 
 const getAppUrl = () => {
-  return process.env.APP_URL || functions.config().app?.url ||
+  return process.env.APP_URL ||
     "https://sviatoslavgladyshev.github.io/oyola-ai";
 };
 
 const getRapidApiKey = () => {
-  return process.env.RAPIDAPI_KEY || functions.config().rapidapi?.key || "";
+  return process.env.RAPIDAPI_KEY || "";
+};
+
+const getAttomApiKey = () => {
+  return process.env.ATTOM_API_KEY ||
+    "23364207340238528444c4ccd88cb02f";
 };
 
 const getGoogleOAuthClientId = () => {
-  return process.env.GOOGLE_OAUTH_CLIENT_ID ||
-    functions.config().google?.oauth_client_id ||
-    "";
+  return process.env.GOOGLE_OAUTH_CLIENT_ID || "";
 };
 
 const getGoogleOAuthClientSecret = () => {
-  return process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
-    functions.config().google?.oauth_client_secret ||
-    "";
+  return process.env.GOOGLE_OAUTH_CLIENT_SECRET || "";
 };
 
 // Cities to rotate through for property searches
 const TARGET_CITIES = [
-  {name: "Los Angeles", state: "CA", location: "Los Angeles, CA"},
-  {name: "Miami", state: "FL", location: "Miami, FL"},
-  {name: "Phoenix", state: "AZ", location: "Phoenix, AZ"},
-  {name: "Atlanta", state: "GA", location: "Atlanta, GA"},
-  {name: "Dallas", state: "TX", location: "Dallas, TX"},
-  {name: "Houston", state: "TX", location: "Houston, TX"},
-  {name: "Las Vegas", state: "NV", location: "Las Vegas, NV"},
-  {name: "Orlando", state: "FL", location: "Orlando, FL"},
-  {name: "San Antonio", state: "TX", location: "San Antonio, TX"},
-  {name: "Jacksonville", state: "FL", location: "Jacksonville, FL"},
-  {name: "Charlotte", state: "NC", location: "Charlotte, NC"},
-  {name: "Memphis", state: "TN", location: "Memphis, TN"},
-  {name: "Nashville", state: "TN", location: "Nashville, TN"},
-  {name: "Denver", state: "CO", location: "Denver, CO"},
-  {name: "Indianapolis", state: "IN", location: "Indianapolis, IN"},
+  {
+    name: "Los Angeles",
+    state: "CA",
+    zipCode: "90210",
+    location: "Los Angeles, CA",
+  },
+  {name: "Miami", state: "FL", zipCode: "33101", location: "Miami, FL"},
+  {name: "Phoenix", state: "AZ", zipCode: "85001", location: "Phoenix, AZ"},
+  {name: "Atlanta", state: "GA", zipCode: "30301", location: "Atlanta, GA"},
+  {name: "Dallas", state: "TX", zipCode: "75201", location: "Dallas, TX"},
+  {name: "Houston", state: "TX", zipCode: "77001", location: "Houston, TX"},
+  {name: "Las Vegas", state: "NV", zipCode: "89101", location: "Las Vegas, NV"},
+  {name: "Orlando", state: "FL", zipCode: "32801", location: "Orlando, FL"},
+  {
+    name: "San Antonio",
+    state: "TX",
+    zipCode: "78201",
+    location: "San Antonio, TX",
+  },
+  {
+    name: "Jacksonville",
+    state: "FL",
+    zipCode: "32099",
+    location: "Jacksonville, FL",
+  },
+  {name: "Charlotte", state: "NC", zipCode: "28201", location: "Charlotte, NC"},
+  {name: "Memphis", state: "TN", zipCode: "38101", location: "Memphis, TN"},
+  {name: "Nashville", state: "TN", zipCode: "37201", location: "Nashville, TN"},
+  {name: "Denver", state: "CO", zipCode: "80201", location: "Denver, CO"},
+  {
+    name: "Indianapolis",
+    state: "IN",
+    zipCode: "46201",
+    location: "Indianapolis, IN",
+  },
 ];
 
 // Seller situation keywords to identify motivated sellers
@@ -1232,14 +1253,272 @@ exports.scheduledZillowFetch = onSchedule({
 });
 
 /**
- * SCHEDULED FUNCTION REMOVED FOR FREE TIER COMPATIBILITY
+ * Scheduled function to periodically fetch properties from ATTOM Data API
+ * Stores transformed properties in Firestore under `properties`
+ * Also records import stats in `importStats`
+ */
+exports.scheduledAttomFetch = onSchedule({
+  schedule: "every 8 hours",
+  timeZone: "America/Los_Angeles",
+}, async (event) => {
+  try {
+    const db = admin.firestore();
+
+    // Determine next target city in rotation
+    const targetCity = await getNextCity();
+    logger.info(`Scheduled ATTOM fetch started for ${targetCity.location}`, {
+      cityName: targetCity.name,
+      state: targetCity.state,
+      zipCode: targetCity.zipCode,
+      location: targetCity.location,
+    });
+
+    // Fetch properties from ATTOM API using city and state
+    // Note: ATTOM API doesn't accept postal1 parameter, use city+state instead
+    logger.info("Calling searchAttomProperties with", {
+      address: null,
+      city: targetCity.name,
+      state: targetCity.state,
+      zipCode: null,
+      radius: 0, // no radius with city/state
+      limit: 30,
+    });
+
+    const properties = await searchAttomProperties(
+        null, // no specific address
+        targetCity.name, // use city name
+        targetCity.state, // use state
+        null, // no postal code (ATTOM API rejects postal1)
+        0, // no radius with city/state search
+        30, // limit to 30 properties per fetch
+    );
+
+    logger.info("ATTOM properties fetched", {
+      count: properties.length,
+      sampleProperty: properties.length > 0 ? {
+        hasIdentifier: !!properties[0].identifier,
+        hasAddress: !!properties[0].address,
+        attomId: properties[0].identifier?.attomId || properties[0].id,
+      } : null,
+    });
+
+    if (properties.length === 0) {
+      await db.collection("importStats").add({
+        success: true,
+        city: targetCity.location,
+        propertiesFetched: 0,
+        propertiesImported: 0,
+        importSource: "attom_api",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        triggerType: "schedule_attom",
+      });
+      logger.info(`No ATTOM properties found for ${targetCity.location}`);
+      return null;
+    }
+
+    // Transform and save in batch
+    const batch = db.batch();
+    let importedCount = 0;
+    let skippedCount = 0;
+    let skippedMissingAttomId = 0;
+    let skippedMissingPrice = 0;
+    let transformErrors = 0;
+
+    for (let i = 0; i < properties.length; i++) {
+      const property = properties[i];
+      try {
+        const transformed = transformAttomPropertyData(property);
+
+        // Log first property for debugging
+        if (i === 0) {
+          logger.info("Sample transformed property (first)", {
+            attomId: transformed.attomId,
+            price: transformed.price,
+            priceType: transformed.priceType,
+            hasAttomId: !!transformed.attomId,
+            hasPrice: transformed.price > 0,
+            address: transformed.address,
+            rawPropertyId: property.id,
+            rawIdentifier: JSON.stringify(property.identifier || {}),
+            rawSale: JSON.stringify(property.sale || {}),
+            rawAssessment: JSON.stringify(property.assessment || {}),
+          });
+        }
+
+        // Save properties with valid attomId
+        // Note: property/address endpoint may not include pricing data,
+        // but we save properties anyway and can fetch pricing details later
+        if (transformed.attomId) {
+          const ref = db.collection("properties")
+              .doc(`attom_${transformed.attomId}`);
+          batch.set(ref, transformed, {merge: true});
+          importedCount++;
+          // Log first saved property
+          if (importedCount === 1) {
+            logger.info("First property being saved", {
+              attomId: transformed.attomId,
+              price: transformed.price,
+              priceType: transformed.priceType,
+              address: transformed.address,
+            });
+          }
+        } else {
+          skippedCount++;
+          // Track skip reasons
+          if (!transformed.attomId) {
+            skippedMissingAttomId++;
+          } else if (transformed.price === 0) {
+            skippedMissingPrice++;
+          }
+          // Log first skipped property for debugging
+          if (i === 0 || skippedCount === 1) {
+            const skipReasonText = !transformed.attomId ?
+              "Missing attomId" : "Price is 0";
+            const detailedMessage = `
+❌ PROPERTY SKIPPED (${skipReasonText}):
+   Transformed attomId: ${transformed.attomId || "NULL"}
+   Transformed price: ${transformed.price}
+   Price type: ${transformed.priceType}
+   Raw property.id: ${property.id || "NULL"}
+   Has identifier: ${!!property.identifier}
+   Identifier attomId: ${property.identifier?.attomId || "NULL"}
+   Sale amount: ${property.sale?.saleAmount?.saleamt || "NULL"}
+   Assessed value: ${property.assessment?.assessed?.assdttlvalue || "NULL"}
+   Market value: ${property.assessment?.market?.mktttlvalue || "NULL"}
+   Property keys: ${Object.keys(property).join(", ")}
+   Has valuation: ${!!property.valuation}
+   Has summary: ${!!property.summary}
+            `;
+
+            logger.warn("Property skipped - detailed info" + detailedMessage, {
+              skipReason: skipReasonText,
+              transformedAttomId: transformed.attomId,
+              transformedPrice: transformed.price,
+              priceType: transformed.priceType,
+              rawPropertyKeys: Object.keys(property),
+              rawPropertyId: property.id,
+              hasIdentifier: !!property.identifier,
+              rawIdentifier: JSON.stringify(property.identifier || {}),
+              rawIdentifierKeys: property.identifier ?
+                Object.keys(property.identifier) : [],
+              identifierAttomId: property.identifier?.attomId,
+              identifierId: property.identifier?.id,
+              saleAmount: property.sale?.saleAmount?.saleamt,
+              assessedValue: property.assessment?.assessed?.assdttlvalue,
+              marketValue: property.assessment?.market?.mktttlvalue,
+              valuationAvm: property.valuation?.avm?.amount,
+              valuationAmount: property.valuation?.amount,
+              avmAmount: property.avm?.amount,
+              summaryAvm: property.summary?.avm?.amount,
+              summaryEstimatedValue: property.summary?.estimatedValue,
+              hasValuation: !!property.valuation,
+              hasSummary: !!property.summary,
+              hasAvm: !!property.avm,
+              fullPropertySample: JSON.stringify(property).substring(0, 1500),
+            });
+          }
+        }
+      } catch (e) {
+        transformErrors++;
+        logger.error("Error transforming ATTOM property", {
+          error: e.message,
+          stack: e.stack,
+          propertyIndex: i,
+          propertySample: JSON.stringify(property).substring(0, 300),
+        });
+      }
+    }
+
+    // Comprehensive summary log with all critical info
+    const summaryMessage = `
+🔍 ATTOM FETCH SUMMARY:
+   Total fetched: ${properties.length}
+   ✅ Imported: ${importedCount}
+   ⚠️  Skipped: ${skippedCount}
+      - Missing attomId: ${skippedMissingAttomId}
+      - Missing price: ${skippedMissingPrice}
+      - Other: ${skippedCount - skippedMissingAttomId - skippedMissingPrice}
+   ❌ Transform errors: ${transformErrors}
+   📦 Batch size: ${batch._deferredWrites?.length || 0}
+    `;
+
+    logger.info("Batch operations summary" + summaryMessage, {
+      totalProperties: properties.length,
+      importedCount,
+      skippedCount,
+      skippedMissingAttomId,
+      skippedMissingPrice,
+      transformErrors,
+      batchSize: batch._deferredWrites?.length || 0,
+      skipBreakdown: {
+        missingAttomId: skippedMissingAttomId,
+        missingPrice: skippedMissingPrice,
+        other: skippedCount - skippedMissingAttomId - skippedMissingPrice,
+      },
+    });
+
+    if (importedCount > 0) {
+      try {
+        await batch.commit();
+        logger.info("✅ Batch committed successfully", {
+          importedCount,
+          totalFetched: properties.length,
+        });
+      } catch (commitError) {
+        logger.error("Failed to commit batch to Firestore", {
+          error: commitError.message,
+          stack: commitError.stack,
+          importedCount,
+        });
+        throw commitError; // Re-throw to be caught by outer catch
+      }
+    } else {
+      logger.warn("⚠️ No properties to commit - batch skipped", {
+        skippedCount,
+        skippedMissingAttomId,
+        skippedMissingPrice,
+        transformErrors,
+        totalFetched: properties.length,
+        reason: skippedCount > 0 ?
+          `${skippedMissingAttomId} missing attomId, ` +
+          `${skippedMissingPrice} missing price` :
+          "No properties transformed successfully",
+      });
+    }
+
+    const stats = {
+      success: true,
+      city: targetCity.location,
+      propertiesFetched: properties.length,
+      propertiesImported: importedCount,
+      importSource: "attom_api",
+    };
+
+    await db.collection("importStats").add({
+      ...stats,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      triggerType: "schedule_attom",
+    });
+
+    logger.info("Scheduled ATTOM fetch completed", stats);
+    return null;
+  } catch (error) {
+    logger.error("Scheduled ATTOM fetch failed", error);
+    return null;
+  }
+});
+
+/**
+ * SCHEDULED FUNCTIONS REMOVED FOR FREE TIER COMPATIBILITY
  *
  * To enable automatic scheduled fetching:
  * 1. Upgrade to Firebase Blaze (pay-as-you-go) plan
  * 2. Uncomment the scheduled function code
  * 3. Add back: const {onSchedule} = require("firebase-functions/v2/scheduler");
  *
- * For now, use the manual fetch function (fetchZillowPropertiesManual)
+ * For now, use the manual fetch functions:
+ * - fetchZillowPropertiesManual (for Zillow API)
+ * - fetchAttomPropertiesForCity (for ATTOM API)
  * to import properties on demand.
  */
 
@@ -1612,6 +1891,629 @@ exports.refreshGmailToken = onCall(async (request) => {
     throw new HttpsError(
         "internal",
         `Failed to refresh token: ${error.message}`,
+    );
+  }
+});
+
+/**
+ * Helper function to make requests to ATTOM Data API
+ * @param {string} endpoint - API endpoint path (e.g., 'property/detail')
+ * @param {object} params - Query parameters
+ * @return {Promise<object>} API response data
+ */
+const fetchFromAttomApi = async (endpoint, params = {}) => {
+  const baseUrl = "https://api.gateway.attomdata.com/propertyapi/v1.0.0";
+  const url = `${baseUrl}/${endpoint}`;
+
+  // Build full URL with params for debugging
+  const paramString = Object.entries(params)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join("&");
+  const fullUrl = `${url}?${paramString}`;
+
+  try {
+    const apiKey = getAttomApiKey();
+    if (!apiKey) {
+      throw new Error("ATTOM API key not configured");
+    }
+
+    logger.info("Making ATTOM API request", {
+      endpoint,
+      params: params,
+      paramKeys: Object.keys(params),
+      url: baseUrl,
+      fullUrl: fullUrl,
+      apiKeyPrefix: apiKey ? `${apiKey.substring(0, 8)}...` : "MISSING",
+    });
+
+    const response = await axios.get(url, {
+      headers: {
+        "Accept": "application/json",
+        "APIKey": apiKey,
+      },
+      params,
+      timeout: 30000, // 30 second timeout
+    });
+
+    logger.info("ATTOM API request successful", {
+      endpoint,
+      status: response.status,
+      dataLength: JSON.stringify(response.data).length,
+    });
+
+    const responseData = response.data;
+
+    // Check if response indicates no results (even on 200 status)
+    const statusMsg = responseData?.status?.msg ||
+      responseData?.message ||
+      responseData?.error ||
+      "";
+    if (statusMsg.includes("SuccessWithoutResult") ||
+        statusMsg.includes("Success Without Result") ||
+        statusMsg.includes("No results found")) {
+      logger.info("ATTOM API response indicates no properties found", {
+        endpoint,
+        statusMsg,
+      });
+      return {property: []}; // Return empty property array
+    }
+
+    return responseData;
+  } catch (error) {
+    // Check for SuccessWithoutResult FIRST before logging errors
+    // This is a valid "no results" response, not an actual error
+    if (error.response?.status === 400) {
+      const apiErrorMsg = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.status?.msg ||
+        JSON.stringify(error.response?.data) ||
+        "Invalid request parameters";
+
+      // "SuccessWithoutResult" is a valid response meaning no properties found
+      // Return empty array instead of throwing error
+      if (apiErrorMsg.includes("SuccessWithoutResult") ||
+          apiErrorMsg.includes("Success Without Result")) {
+        logger.info(
+            "ATTOM API returned SuccessWithoutResult - no properties found",
+            {
+              endpoint,
+            },
+        );
+        return {property: []}; // Return empty property array
+      }
+    }
+
+    // For actual errors, log detailed information
+    const errorDetails = {
+      endpoint,
+      error: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      responseData: error.response?.data,
+      responseHeaders: error.response?.headers,
+      requestParams: params,
+      requestUrl: `${baseUrl}/${endpoint}`,
+      fullRequestUrl: fullUrl,
+      fullError: JSON.stringify({
+        message: error.message,
+        code: error.code,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          headers: error.response.headers,
+        } : null,
+      }, null, 2),
+    };
+
+    logger.error("ATTOM API request failed - DETAILED", errorDetails);
+
+    // Log response body separately for better visibility
+    if (error.response?.data) {
+      logger.error("ATTOM API error response body", {
+        endpoint,
+        responseBody: JSON.stringify(error.response.data, null, 2),
+        responseBodyType: typeof error.response.data,
+        responseBodyKeys: typeof error.response.data === "object" ?
+          Object.keys(error.response.data) : "N/A",
+      });
+    }
+
+    if (error.response?.status === 401) {
+      throw new Error("Invalid ATTOM API key");
+    } else if (error.response?.status === 429) {
+      throw new Error("ATTOM API rate limit exceeded");
+    } else if (error.response?.status === 400) {
+      const apiErrorMsg = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.status?.msg ||
+        JSON.stringify(error.response?.data) ||
+        "Invalid request parameters";
+      throw new Error(`Invalid request parameters: ${apiErrorMsg}`);
+    }
+
+    throw error;
+  }
+};
+
+/**
+ * Fetch property details by ATTOM ID
+ * @param {string} attomId - ATTOM property identifier
+ * @return {Promise<object>} Property details
+ */
+const fetchAttomPropertyDetail = async (attomId) => {
+  if (!attomId) {
+    throw new Error("Property ID is required");
+  }
+
+  const data = await fetchFromAttomApi("property/detail", {id: attomId});
+
+  if (!data?.property || data.property.length === 0) {
+    throw new Error("Property not found");
+  }
+
+  return data.property[0]; // ATTOM returns array, take first result
+};
+
+/**
+ * Search properties by location/address using ATTOM API
+ * @param {string} address - Street address
+ * @param {string} city - City name
+ * @param {string} state - State abbreviation
+ * @param {string} zipCode - ZIP code
+ * @param {number} radius - Search radius in miles (default: 1)
+ * @param {number} limit - Maximum results to return (default: 10)
+ * @return {Promise<Array>} Array of property objects
+ */
+const searchAttomProperties = async (
+    address,
+    city,
+    state,
+    zipCode,
+    radius = 1,
+    limit = 10,
+) => {
+  const params = {
+    pagesize: Math.min(limit, 100), // ATTOM max is 100
+  };
+
+  logger.info("searchAttomProperties - Input parameters", {
+    address: address || null,
+    city: city || null,
+    state: state || null,
+    zipCode: zipCode || null,
+    radius,
+    limit,
+  });
+
+  // Build search criteria - ATTOM API has specific parameter requirements
+  // NOTE: postal1 parameter is rejected by ATTOM API, use city+state instead
+  // Priority: address > city+state > (zipCode fallback to city+state)
+  if (address) {
+    // Use exact address
+    params.address1 = address;
+    logger.info("searchAttomProperties - Using address search", {
+      address1: address,
+    });
+  } else if (city && state) {
+    // Use single 'address' parameter with city and state
+    // ATTOM API property/address endpoint requires address1 AND address2
+    // together, OR use single 'address' parameter with "City, State" format
+    params.address = `${city}, ${state}`;
+    logger.info("searchAttomProperties - Using city/state search", {
+      address: params.address,
+    });
+  } else if (zipCode) {
+    // NOTE: ATTOM API rejects postal1 parameter
+    // If only zipCode provided without city+state, log warning and skip
+    logger.warn(
+        "searchAttomProperties - zipCode provided but postal1 rejected",
+        {
+          zipCode,
+          message: "Need city+state instead of zipCode for ATTOM API",
+        },
+    );
+    throw new Error("ATTOM API requires city+state instead of zipCode. " +
+      "Please provide city and state parameters.");
+  } else {
+    throw new Error("At least one location parameter " +
+      "(address or city+state) is required");
+  }
+
+  logger.info("searchAttomProperties - Final params being sent", {
+    params: params,
+    paramCount: Object.keys(params).length,
+  });
+
+  const data = await fetchFromAttomApi("property/address", params);
+
+  logger.info("searchAttomProperties - API response received", {
+    hasData: !!data,
+    dataKeys: data ? Object.keys(data) : [],
+    hasProperty: !!data?.property,
+    propertyType: Array.isArray(data?.property) ?
+      "array" : typeof data?.property,
+    propertyLength: Array.isArray(data?.property) ?
+      data.property.length : "N/A",
+    sampleData: data ? JSON.stringify(data).substring(0, 500) : null,
+    fullResponseStructure: JSON.stringify(data, null, 2)
+        .substring(0, 2000), // First 2000 chars of formatted JSON
+  });
+
+  const properties = data?.property || [];
+  logger.info("searchAttomProperties - Returning properties", {
+    count: properties.length,
+    sampleProperty: properties.length > 0 ? {
+      keys: Object.keys(properties[0]),
+      hasIdentifier: !!properties[0].identifier,
+      identifierKeys: properties[0].identifier ?
+        Object.keys(properties[0].identifier) : [],
+      identifierAttomId: properties[0].identifier?.attomId,
+      identifierId: properties[0].id,
+      hasAddress: !!properties[0].address,
+      hasSale: !!properties[0].sale,
+      hasAssessment: !!properties[0].assessment,
+      rawIdentifier: JSON.stringify(properties[0].identifier || {}),
+    } : null,
+  });
+
+  return properties;
+};
+
+/**
+ * Transform ATTOM property data to our internal format
+ * @param {object} attomProperty - Raw ATTOM property data
+ * @return {object} Transformed property object
+ */
+const transformAttomPropertyData = (attomProperty) => {
+  const address = attomProperty.address || {};
+  const location = attomProperty.location || {};
+  const building = attomProperty.building || {};
+  const sale = attomProperty.sale || {};
+  const assessment = attomProperty.assessment || {};
+  const valuation = attomProperty.valuation || {};
+  const summary = attomProperty.summary || {};
+  const avm = attomProperty.avm || {};
+
+  // Extract address components
+  const streetAddress = [
+    address.line1 || "",
+    address.line2 || "",
+  ].filter(Boolean).join(" ");
+
+  const fullAddress = [
+    streetAddress,
+    address.locality || address.city || "",
+    address.countrySubd || address.state || "",
+    address.postal1 || address.zipCode || "",
+  ].filter(Boolean).join(", ");
+
+  // Extract property details
+  const bedrooms = building.rooms?.beds || building.bedrooms || 0;
+  const bathrooms = building.rooms?.bathstotal || building.bathrooms || 0;
+  const area = building.size?.universalsize || building.livingarea || 0;
+
+  // Extract pricing information with multiple fallbacks
+  // Priority: sale amount > assessed value > market value >
+  //           valuation > AVM (Automated Valuation Model)
+  let price = 0;
+  let priceType = "unknown";
+
+  if (sale.saleAmount?.saleamt) {
+    // Use sale price if available (don't require saleTransDate)
+    price = sale.saleAmount.saleamt;
+    priceType = "sale";
+  } else if (assessment.assessed?.assdttlvalue) {
+    // Fall back to assessed value
+    price = assessment.assessed.assdttlvalue;
+    priceType = "assessed";
+  } else if (assessment.market?.mktttlvalue) {
+    // Fall back to market value
+    price = assessment.market.mktttlvalue;
+    priceType = "market";
+  } else if (valuation.avm?.amount) {
+    // Use AVM from valuation
+    price = valuation.avm.amount;
+    priceType = "avm";
+  } else if (avm.amount) {
+    // Use AVM directly
+    price = avm.amount;
+    priceType = "avm";
+  } else if (summary.avm?.amount) {
+    // Use AVM from summary
+    price = summary.avm.amount;
+    priceType = "avm";
+  } else if (valuation?.amount) {
+    // Use valuation amount
+    price = valuation.amount;
+    priceType = "valuation";
+  } else if (summary?.estimatedValue) {
+    // Use estimated value from summary
+    price = summary.estimatedValue;
+    priceType = "estimated";
+  }
+
+  // Extract ATTOM ID with multiple fallbacks
+  const attomId = attomProperty.identifier?.attomId ||
+    attomProperty.identifier?.id ||
+    attomProperty.id ||
+    attomProperty.attomId ||
+    null;
+
+  return {
+    // ATTOM identifiers
+    attomId: attomId,
+    fips: attomProperty.identifier?.fips,
+    apn: attomProperty.identifier?.apn,
+
+    // Address information
+    address: fullAddress,
+    streetAddress,
+    city: address.locality || address.city || "",
+    state: address.countrySubd || address.state || "",
+    zipCode: address.postal1 || address.zipCode || "",
+    country: address.country || "US",
+
+    // Property details
+    propertyType: building.propertyType || building.useCode || "Unknown",
+    yearBuilt: building.yearbuilt || null,
+    bedrooms,
+    bathrooms,
+    area,
+
+    // Pricing (may be 0 if not available from property/address endpoint)
+    // Pricing can be fetched later via property/detail endpoint
+    price: price || 0,
+    priceType: price > 0 ? priceType : "unavailable",
+
+    // Assessment and tax info
+    assessedValue: assessment.assessed?.assdttlvalue || null,
+    marketValue: assessment.market?.mktttlvalue || null,
+    taxAmount: assessment.tax?.taxamt || null,
+    taxYear: assessment.tax?.taxyear || null,
+
+    // Sale information
+    lastSaleDate: sale.saleTransDate || null,
+    lastSalePrice: sale.saleAmount?.saleamt || null,
+    saleRecordingDate: sale.saleRecordingDate || null,
+
+    // Location coordinates
+    latitude: location.latitude || null,
+    longitude: location.longitude || null,
+
+    // Raw ATTOM data for reference
+    rawData: attomProperty,
+
+    // Metadata
+    importedAt: admin.firestore.FieldValue.serverTimestamp(),
+    importSource: "attom_api",
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    status: "active",
+  };
+};
+
+/**
+ * Callable function to fetch property details from ATTOM API
+ */
+exports.fetchAttomPropertyDetail = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new HttpsError(
+          "unauthenticated",
+          "Authentication required",
+      );
+    }
+
+    const {attomId} = request.data;
+
+    if (!attomId) {
+      throw new HttpsError(
+          "invalid-argument",
+          "ATTOM property ID is required",
+      );
+    }
+
+    logger.info("Fetching ATTOM property detail", {
+      attomId,
+      userId: request.auth.uid,
+    });
+
+    const propertyData = await fetchAttomPropertyDetail(attomId);
+    const transformedProperty = transformAttomPropertyData(propertyData);
+
+    return {
+      success: true,
+      property: transformedProperty,
+    };
+  } catch (error) {
+    logger.error("Error fetching ATTOM property detail", error);
+    throw new HttpsError(
+        "internal",
+        `Failed to fetch property details: ${error.message}`,
+    );
+  }
+});
+
+/**
+ * Callable function to search properties using ATTOM API
+ */
+exports.searchAttomProperties = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new HttpsError(
+          "unauthenticated",
+          "Authentication required",
+      );
+    }
+
+    const {
+      address,
+      city,
+      state,
+      zipCode,
+      radius = 1,
+      limit = 10,
+    } = request.data;
+
+    logger.info("Searching ATTOM properties", {
+      address,
+      city,
+      state,
+      zipCode,
+      radius,
+      limit,
+      userId: request.auth.uid,
+    });
+
+    const properties = await searchAttomProperties(
+        address,
+        city,
+        state,
+        zipCode,
+        radius,
+        limit,
+    );
+
+    const transformedProperties = properties.map(transformAttomPropertyData);
+
+    // Save valid properties to Firestore
+    const db = admin.firestore();
+    const batch = db.batch();
+    let savedCount = 0;
+
+    transformedProperties.forEach((property) => {
+      // Only save properties with valid ATTOM ID and pricing information
+      if (property.attomId && property.price > 0) {
+        const ref = db.collection("properties")
+            .doc(`attom_${property.attomId}`);
+        batch.set(ref, property, {merge: true});
+        savedCount++;
+      }
+    });
+
+    if (savedCount > 0) {
+      await batch.commit();
+      logger.info("ATTOM properties saved to Firestore", {
+        totalFetched: transformedProperties.length,
+        savedToFirebase: savedCount,
+      });
+    } else {
+      logger.warn("No valid ATTOM properties found to save", {
+        totalFetched: transformedProperties.length,
+      });
+    }
+
+    return {
+      success: true,
+      properties: transformedProperties,
+      count: transformedProperties.length,
+      savedToFirebase: savedCount,
+    };
+  } catch (error) {
+    logger.error("Error searching ATTOM properties", error);
+    throw new HttpsError(
+        "internal",
+        `Failed to search properties: ${error.message}`,
+    );
+  }
+});
+
+/**
+ * Manual trigger function to import properties from ATTOM API for a city
+ */
+exports.fetchAttomPropertiesForCity = onCall(async (request) => {
+  try {
+    if (!request.auth) {
+      throw new HttpsError(
+          "unauthenticated",
+          "Authentication required",
+      );
+    }
+
+    const {city, state, limit = 20} = request.data;
+
+    if (!city || !state) {
+      throw new HttpsError(
+          "invalid-argument",
+          "City and state are required",
+      );
+    }
+
+    logger.info("Fetching ATTOM properties for city", {
+      city,
+      state,
+      limit,
+      userId: request.auth.uid,
+    });
+
+    // Search properties using postal code for the city
+    const properties = await searchAttomProperties(
+        null, // no specific address
+        null, // no city
+        null, // no state
+        city === "Los Angeles" ? "90210" :
+        city === "Miami" ? "33101" :
+        city === "Phoenix" ? "85001" :
+        city === "Atlanta" ? "30301" :
+        city === "Dallas" ? "75201" :
+        city === "Houston" ? "77001" :
+        city === "Las Vegas" ? "89101" :
+        city === "Orlando" ? "32801" :
+        city === "San Antonio" ? "78201" :
+        city === "Jacksonville" ? "32099" :
+        city === "Charlotte" ? "28201" :
+        city === "Memphis" ? "38101" :
+        city === "Nashville" ? "37201" :
+        city === "Denver" ? "80201" :
+        city === "Indianapolis" ? "46201" : "90210", // default to LA
+        5, // 5 mile radius
+        limit,
+    );
+
+    const transformedProperties = properties.map(transformAttomPropertyData);
+
+    // Save to Firestore
+    const db = admin.firestore();
+    const batch = db.batch();
+    let importedCount = 0;
+
+    transformedProperties.forEach((property) => {
+      if (property.attomId && property.price > 0) {
+        const ref = db.collection("properties")
+            .doc(`attom_${property.attomId}`);
+        batch.set(ref, property, {merge: true});
+        importedCount++;
+      }
+    });
+
+    if (importedCount > 0) {
+      await batch.commit();
+    }
+
+    // Log statistics
+    await db.collection("importStats").add({
+      success: true,
+      city: `${city}, ${state}`,
+      propertiesFetched: properties.length,
+      propertiesImported: importedCount,
+      importSource: "attom_api",
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      triggeredBy: request.auth.uid,
+      triggerType: "manual_attom",
+    });
+
+    return {
+      success: true,
+      city: `${city}, ${state}`,
+      propertiesFetched: properties.length,
+      propertiesImported: importedCount,
+      properties: transformedProperties,
+    };
+  } catch (error) {
+    logger.error("Error fetching ATTOM properties for city", error);
+    throw new HttpsError(
+        "internal",
+        `Failed to fetch ATTOM properties: ${error.message}`,
     );
   }
 });

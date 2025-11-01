@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus } from 'react-icons/hi';
+import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus, HiTable } from 'react-icons/hi';
 import { loadInitialLocations, searchLocations, filterLoadedLocations } from '../../utils/locationSearch';
 
 const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, offersCount, onLocationChange }) => {
@@ -400,6 +400,13 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                         <HiPresentationChartBar size={20} />
                         <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
                       </button>
+                      <button 
+                        className={`mobile-menu-item ${view === 'handsontable' ? 'active' : ''}`}
+                        onClick={() => handleViewChange('handsontable')}
+                      >
+                        <HiTable size={20} />
+                        <span>Data Table</span>
+                      </button>
                     </div>
                     
                     <div className="mobile-menu-divider" />
@@ -751,6 +758,13 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
             >
               <HiPresentationChartBar size={20} />
               <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
+            </button>
+            <button 
+              className={`header-nav-button ${view === 'handsontable' ? 'active' : ''}`}
+              onClick={() => onViewChange('handsontable')}
+            >
+              <HiTable size={20} />
+              <span>Data Table</span>
             </button>
           </div>
           <button 
