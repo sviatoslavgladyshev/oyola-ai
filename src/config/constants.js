@@ -1,0 +1,71 @@
+// Global constants for the application
+// Note: US Cities/Locations are now loaded dynamically via @mardillu/us-cities-utils
+
+// Property type options
+export const PROPERTY_TYPES = [
+  'All',
+  'Long-term',
+  'Fix & Flip',
+  'House',
+  'Condo',
+  'Apartment',
+  'Townhouse'
+];
+
+// Financing type options
+export const FINANCING_TYPES = [
+  'Cash',
+  'Pre-approved Mortgage',
+  'Conventional Loan',
+  'FHA Loan'
+];
+
+// Closing timeline options
+export const CLOSING_TIMELINES = [
+  '15 days',
+  '30 days',
+  '45 days',
+  '60 days',
+  '90 days'
+];
+
+// Contingency options
+export const CONTINGENCY_OPTIONS = [
+  'Inspection',
+  'Appraisal',
+  'Financing',
+  'Sale of Current Home'
+];
+
+// Bedroom options
+export const BEDROOM_OPTIONS = ['Any', '1+', '2+', '3+', '4+'];
+
+// Bathroom options
+export const BATHROOM_OPTIONS = ['Any', '1+', '2+', '3+'];
+
+// Offer status options
+export const OFFER_STATUS = {
+  SENT: 'sent',
+  VIEWED: 'viewed',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected'
+};
+
+// User roles
+export const USER_ROLES = {
+  BUYER: 'buyer',
+  OWNER: 'owner'
+};
+
+// Notification types
+export const NOTIFICATION_TYPES = {
+  SUCCESS: 'success',
+  ERROR: 'error',
+  WARNING: 'warning',
+  INFO: 'info'
+};
+
+// Unsplash API Configuration (for city photos)
+// Get your free API key at: https://unsplash.com/developers
+export const UNSPLASH_ACCESS_KEY = process.env.REACT_APP_UNSPLASH_ACCESS_KEY || 'demo';
+
