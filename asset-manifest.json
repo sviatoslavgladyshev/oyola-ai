@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/oyola-ai/static/css/main.b554899d.css",
-    "main.js": "/oyola-ai/static/js/main.eba3a02e.js",
-    "static/js/453.cc9d2600.chunk.js": "/oyola-ai/static/js/453.cc9d2600.chunk.js",
+    "main.css": "/oyola-ai/static/css/main.5bb28343.css",
+    "main.js": "/oyola-ai/static/js/main.eb5d89bd.js",
+    "static/js/453.6f381a5b.chunk.js": "/oyola-ai/static/js/453.6f381a5b.chunk.js",
     "index.html": "/oyola-ai/index.html",
-    "main.b554899d.css.map": "/oyola-ai/static/css/main.b554899d.css.map",
-    "main.eba3a02e.js.map": "/oyola-ai/static/js/main.eba3a02e.js.map",
-    "453.cc9d2600.chunk.js.map": "/oyola-ai/static/js/453.cc9d2600.chunk.js.map"
+    "main.5bb28343.css.map": "/oyola-ai/static/css/main.5bb28343.css.map",
+    "main.eb5d89bd.js.map": "/oyola-ai/static/js/main.eb5d89bd.js.map",
+    "453.6f381a5b.chunk.js.map": "/oyola-ai/static/js/453.6f381a5b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b554899d.css",
-    "static/js/main.eba3a02e.js"
+    "static/css/main.5bb28343.css",
+    "static/js/main.eb5d89bd.js"
   ]
 }
