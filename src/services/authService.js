@@ -12,7 +12,6 @@ import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   setPersistence,
   browserLocalPersistence,
@@ -139,20 +138,8 @@ export const signInWithGoogle = async (role = null, rememberMe = true) => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    let result;
-    try {
-      result = await signInWithPopup(auth, provider);
-    } catch (popupError) {
-      if (
-        popupError?.code === 'auth/popup-closed-by-user' ||
-        popupError?.code === 'auth/cancelled-popup-request' ||
-        popupError?.code === 'auth/popup-blocked'
-      ) {
-        await signInWithRedirect(auth, provider);
-        return;
-      }
-      throw popupError;
-    }
+    // Always use popup - never fall back to redirect
+    const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
     // Extract Google OAuth credential/access token
@@ -201,6 +188,13 @@ export const signInWithGoogle = async (role = null, rememberMe = true) => {
       throw new Error('Sign-in cancelled. Please try again.');
     } else if (error.code === 'auth/popup-blocked') {
       throw new Error('Sign-in popup was blocked. Please allow popups for this site.');
+    } else if (
+      error.message?.includes('Cross-Origin-Opener-Policy') || 
+      error.message?.includes('COOP') ||
+      error.toString().includes('Cross-Origin-Opener-Policy')
+    ) {
+      console.error('COOP Error:', error);
+      throw new Error('Browser security settings are blocking the popup. Please check your browser settings or try a different browser.');
     } else {
       throw new Error(error.message || 'Failed to sign in with Google');
     }

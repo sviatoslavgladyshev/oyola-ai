@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus, HiTable } from 'react-icons/hi';
+import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus, HiTable, HiEye, HiEyeOff } from 'react-icons/hi';
 import { loadInitialLocations, searchLocations, filterLoadedLocations } from '../../utils/locationSearch';
+import ThemeSwitcher from '../ui/ThemeSwitcher';
 
 const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, offersCount, onLocationChange }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -20,6 +21,19 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [isClosingMenu, setIsClosingMenu] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [tabsCollapsed, setTabsCollapsed] = useState(false);
+
+  // Detect scroll to convert header to pill
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 50); // Trigger pill style after 50px scroll
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Detect if we're on mobile
   useEffect(() => {
@@ -52,6 +66,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
         setLocationSearch('');
         setSearchResults([]);
       }
+      
     };
 
     // Add event listener when any dropdown is open
@@ -269,7 +284,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
   if (isMobile) {
     return (
       <>
-        <header className="app-header mobile-header">
+        <header className={`app-header mobile-header ${isScrolled ? 'header-pill' : ''}`}>
           {searchExpanded ? (
             <div className="mobile-header-row mobile-header-search-expanded">
               {/* Expanded Search Bar */}
@@ -312,7 +327,13 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
               
               {/* Logo in Center */}
               <div className="mobile-header-center">
-                <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="mobile-header-logo" />
+                <a href="/" aria-label="logo" id="logo-link">
+                  <div aria-hidden="true" className="flex">
+                    <div className="logo-circle"></div>
+                    <div className="logo-bar"></div>
+                  </div>
+                  <span className="logo-text">Oyola AI</span>
+                </a>
               </div>
               
               {/* Search Button */}
@@ -428,6 +449,13 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                     <HiCog size={20} />
                     <span>Settings</span>
                   </button>
+                </div>
+
+                <div className="mobile-menu-divider" />
+
+                {/* Theme Switcher */}
+                <div className="mobile-menu-item-theme">
+                  <ThemeSwitcher />
                 </div>
 
                 <div className="mobile-menu-divider" />
@@ -555,228 +583,255 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
   // Desktop Header Layout
   return (
     <>
-    <header className="app-header desktop-header">
+    <header className={`app-header desktop-header ${isScrolled ? 'header-pill' : ''}`}>
       <div className="header-content">
-        <div className="header-left">
-          <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="header-logo" />
+        {/* Left Section: Brand */}
+        <div className="header-left-group">
+          <a href="/" aria-label="logo" id="logo-link" className="header-logo-link">
+            <div aria-hidden="true" className="flex">
+              <div className="logo-circle"></div>
+              <div className="logo-bar"></div>
+            </div>
+            <span className="logo-text">Oyola AI</span>
+          </a>
         </div>
         
-        <div className="location-selector" ref={locationMenuRef}>
-          <button 
-            className="location-button"
-            onClick={() => {
-              setShowLocationDropdown(!showLocationDropdown);
-              setShowDropdown(false); // Close user menu when opening location menu
-            }}
-          >
-            <HiLocationMarker size={18} />
-            <span className="location-text">{location}</span>
-            <HiChevronDown size={16} className="location-arrow" />
-          </button>
+        {/* Center Section: Location + Search */}
+        <div className="header-center">
+          <div className="search-location-group">
+            <div className="location-selector" ref={locationMenuRef}>
+              <button 
+                className="location-button"
+                onClick={() => {
+                  setShowLocationDropdown(!showLocationDropdown);
+                  setShowDropdown(false);
+                }}
+              >
+                <HiLocationMarker size={18} />
+                <span className="location-text">{location}</span>
+                <HiChevronDown size={16} className="location-arrow" />
+              </button>
 
-          {showLocationDropdown && (
-            <>
-              <div className="dropdown-overlay" onClick={handleCloseLocationDropdown} />
-              <div className="location-dropdown">
-                <div className="location-dropdown-header">
-                  {!selectedState && !locationSearch && (
-                    <>
-                      <button 
-                        className="location-dropdown-item auto-detect"
-                        onClick={handleAutoLocation}
-                        disabled={isDetectingLocation}
-                      >
-                        <HiLocationMarker size={18} />
-                        <span>{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
-                      </button>
-                      <div className="dropdown-divider" />
-                    </>
-                  )}
-                  <div className="location-search-wrapper">
-                    <HiSearch size={16} className="location-search-icon" />
-                    <input
-                      type="text"
-                      className="location-search-input"
-                      placeholder={selectedState ? "Search cities..." : "Search locations..."}
-                      value={locationSearch}
-                      onChange={(e) => setLocationSearch(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                </div>
-                <div className="location-list">
-                  {isSearching ? (
-                    <div className="location-searching">
-                      <span>Searching...</span>
-                    </div>
-                  ) : selectedState && !locationSearch ? (
-                    // Show cities in selected state
-                    <>
-                      <button
-                        className={`location-dropdown-item highlight ${location === `All cities in ${selectedState}` ? 'active' : ''}`}
-                        onClick={() => handleSelectAllCitiesInState(selectedState)}
-                      >
-                        <strong>All cities in {selectedState}</strong>
-                      </button>
-                      <div className="dropdown-divider" />
-                      {filteredLocations.map((loc, index) => (
-                        <button
-                          key={`${loc.value}-${index}`}
-                          className={`location-dropdown-item ${location === loc.value ? 'active' : ''}`}
-                          onClick={() => handleLocationChange(loc.value)}
-                        >
-                          {loc.value.split(', ')[0]}
-                        </button>
-                      ))}
-                    </>
-                  ) : (
-                    // Show popular cities list
-                    <>
-                      <button
-                        className={`location-dropdown-item ${location === 'All Locations' ? 'active' : ''}`}
-                        onClick={() => handleLocationChange('All Locations')}
-                      >
-                        All Locations
-                      </button>
-                      <div className="dropdown-divider" />
-                      <div className="location-list-header">Popular Cities</div>
-                      {filteredLocations.length > 0 ? (
-                        filteredLocations.map((loc, index) => (
-                          <button
-                            key={`${loc.value}-${index}`}
-                            className={`location-dropdown-item ${location === loc.value ? 'active' : ''}`}
-                            onClick={() => handleLocationChange(loc.value)}
+              {showLocationDropdown && (
+                <>
+                  <div className="dropdown-overlay" onClick={handleCloseLocationDropdown} />
+                  <div className="location-dropdown">
+                    <div className="location-dropdown-header">
+                      {!selectedState && !locationSearch && (
+                        <>
+                          <button 
+                            className="location-dropdown-item auto-detect"
+                            onClick={handleAutoLocation}
+                            disabled={isDetectingLocation}
                           >
-                            {loc.value}
+                            <HiLocationMarker size={18} />
+                            <span>{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
                           </button>
-                        ))
+                          <div className="dropdown-divider" />
+                        </>
+                      )}
+                      <div className="location-search-wrapper">
+                        <HiSearch size={16} className="location-search-icon" />
+                        <input
+                          type="text"
+                          className="location-search-input"
+                          placeholder={selectedState ? "Search cities..." : "Search locations..."}
+                          value={locationSearch}
+                          onChange={(e) => setLocationSearch(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+                    <div className="location-list">
+                      {isSearching ? (
+                        <div className="location-searching">
+                          <span>Searching...</span>
+                        </div>
+                      ) : selectedState && !locationSearch ? (
+                        <>
+                          <button
+                            className={`location-dropdown-item highlight ${location === `All cities in ${selectedState}` ? 'active' : ''}`}
+                            onClick={() => handleSelectAllCitiesInState(selectedState)}
+                          >
+                            <strong>All cities in {selectedState}</strong>
+                          </button>
+                          <div className="dropdown-divider" />
+                          {filteredLocations.map((loc, index) => (
+                            <button
+                              key={`${loc.value}-${index}`}
+                              className={`location-dropdown-item ${location === loc.value ? 'active' : ''}`}
+                              onClick={() => handleLocationChange(loc.value)}
+                            >
+                              {loc.value.split(', ')[0]}
+                            </button>
+                          ))}
+                        </>
                       ) : (
+                        <>
+                          <button
+                            className={`location-dropdown-item ${location === 'All Locations' ? 'active' : ''}`}
+                            onClick={() => handleLocationChange('All Locations')}
+                          >
+                            All Locations
+                          </button>
+                          <div className="dropdown-divider" />
+                          <div className="location-list-header">Popular Cities</div>
+                          {filteredLocations.length > 0 ? (
+                            filteredLocations.map((loc, index) => (
+                              <button
+                                key={`${loc.value}-${index}`}
+                                className={`location-dropdown-item ${location === loc.value ? 'active' : ''}`}
+                                onClick={() => handleLocationChange(loc.value)}
+                              >
+                                {loc.value}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="location-no-results">
+                              No locations found
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {filteredLocations.length === 0 && locationSearch && (
                         <div className="location-no-results">
                           No locations found
                         </div>
                       )}
-                    </>
-                  )}
-                  {filteredLocations.length === 0 && locationSearch && (
-                    <div className="location-no-results">
-                      No locations found
                     </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        
-        <div className="header-center">
-          <form className="search-bar" onSubmit={handleSearchSubmit}>
-            <HiSearch className="search-icon" size={20} />
-            <input
-              type="text"
-              placeholder="Search properties..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="search-input"
-            />
-          </form>
-        </div>
-        
-        {user && (
-          <div className="header-right">
-            <div className="user-menu" ref={userMenuRef}>
-              <button 
-                className="user-menu-trigger" 
-                onClick={() => {
-                  setShowDropdown(!showDropdown);
-                  setShowLocationDropdown(false); // Close location menu when opening user menu
-                }}
-              >
-                <div className="user-avatar">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.displayName || user.name || user.email} />
-                  ) : (
-                    <span className="avatar-initial">
-                      {(user.displayName || user.name || user.email || '?').charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="user-info">
-                  <span className="user-name">{user.displayName || user.name || user.email}</span>
-                </div>
-                <span className="dropdown-arrow"><HiChevronDown size={18} /></span>
-              </button>
-
-              {showDropdown && (
-                <>
-                  <div className="dropdown-overlay" onClick={() => setShowDropdown(false)} />
-                  <div className="user-dropdown">
-                    <div className="dropdown-header">
-                      <strong>{user.displayName || user.name || user.email}</strong>
-                      <small>{user.email}</small>
-                    </div>
-                    <div className="dropdown-divider" />
-                    <button className="dropdown-item" onClick={handleOpenProfile}>
-                      <HiUser size={18} />
-                      <span>My Profile</span>
-                    </button>
-                    <button className="dropdown-item">
-                      <HiChartBar size={18} />
-                      <span>My Offers</span>
-                    </button>
-                    <button className="dropdown-item">
-                      <HiCog size={18} />
-                      <span>Settings</span>
-                    </button>
-                    <div className="dropdown-divider" />
-                    <button className="dropdown-item danger" onClick={handleSignOut}>
-                      <HiLogout size={18} />
-                      <span>Sign Out</span>
-                    </button>
                   </div>
                 </>
               )}
             </div>
+            
+            <form className="search-bar" onSubmit={handleSearchSubmit}>
+              <HiSearch className="search-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Search properties..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="search-input"
+              />
+            </form>
           </div>
-        )}
-      </div>
-    </header>
-    {user && user.role !== 'owner' && onViewChange && (
-      <div className="sub-header">
-        <div className="sub-header-content">
-          <div className="sub-header-nav">
+        </div>
+
+        {/* Right Section: Navigation & Actions */}
+        <div className="header-right-group">
+          {user && user.role !== 'owner' && onViewChange && (
+            <div className={`header-nav-tabs ${tabsCollapsed ? 'collapsed' : ''}`}>
+              <button 
+                className={`header-nav-button ${view === 'dashboard' ? 'active' : ''}`}
+                onClick={() => handleViewChange('dashboard')}
+                title="Dashboard"
+              >
+                <HiLocationMarker size={18} />
+                {!tabsCollapsed && <span className="nav-text">Dashboard</span>}
+              </button>
+              <button 
+                className={`header-nav-button ${view === 'results' || view === 'detail' ? 'active' : ''}`}
+                onClick={() => handleViewChange('results')}
+                disabled={!offersCount || offersCount === 0}
+                title={`My Offers ${offersCount > 0 ? `(${offersCount})` : ''}`}
+              >
+                <HiPresentationChartBar size={18} />
+                {!tabsCollapsed && <span className="nav-text">Offers {offersCount > 0 && `(${offersCount})`}</span>}
+              </button>
+              <button 
+                className={`header-nav-button ${view === 'handsontable' ? 'active' : ''}`}
+                onClick={() => handleViewChange('handsontable')}
+                title="Data Table"
+              >
+                <HiTable size={18} />
+                {!tabsCollapsed && <span className="nav-text">Table</span>}
+              </button>
+              <button 
+                className="header-nav-collapse-toggle"
+                onClick={() => setTabsCollapsed(!tabsCollapsed)}
+                title={tabsCollapsed ? "Show tabs" : "Hide tabs"}
+                aria-label={tabsCollapsed ? "Show navigation tabs" : "Hide navigation tabs"}
+              >
+                {tabsCollapsed ? (
+                  <HiEye size={18} />
+                ) : (
+                  <HiEyeOff size={18} />
+                )}
+              </button>
+            </div>
+          )}
+          
+          {user && user.role !== 'owner' && onViewChange && (
             <button 
-              className={`header-nav-button ${view === 'dashboard' ? 'active' : ''}`}
-              onClick={() => onViewChange('dashboard')}
+              className={`add-offer-button ${view === 'form' ? 'active' : ''}`}
+              onClick={() => handleViewChange('form')}
             >
-              <HiLocationMarker size={18} />
-              <span>Dashboard</span>
+              <HiPlus size={18} />
+              <span>Add Offer</span>
             </button>
-            <button 
-              className={`header-nav-button ${view === 'results' || view === 'detail' ? 'active' : ''}`}
-              onClick={() => onViewChange('results')}
-              disabled={!offersCount || offersCount === 0}
-            >
-              <HiPresentationChartBar size={20} />
-              <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
-            </button>
-            <button 
-              className={`header-nav-button ${view === 'handsontable' ? 'active' : ''}`}
-              onClick={() => onViewChange('handsontable')}
-            >
-              <HiTable size={20} />
-              <span>Data Table</span>
-            </button>
+          )}
+          
+          <div className="header-actions">
+            {user && (
+              <div className="user-menu" ref={userMenuRef}>
+                <button 
+                  className="user-menu-trigger" 
+                  onClick={() => {
+                    setShowDropdown(!showDropdown);
+                    setShowLocationDropdown(false);
+                  }}
+                >
+                  <div className="user-avatar">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || user.name || user.email} />
+                    ) : (
+                      <span className="avatar-initial">
+                        {(user.displayName || user.name || user.email || '?').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="dropdown-arrow"><HiChevronDown size={18} /></span>
+                </button>
+
+                {showDropdown && (
+                  <>
+                    <div className="dropdown-overlay" onClick={() => setShowDropdown(false)} />
+                    <div className="user-dropdown">
+                      <div className="dropdown-header">
+                        <strong>{user.displayName || user.name || user.email}</strong>
+                        <small>{user.email}</small>
+                      </div>
+                      <div className="dropdown-divider" />
+                      <button className="dropdown-item" onClick={handleOpenProfile}>
+                        <HiUser size={18} />
+                        <span>My Profile</span>
+                      </button>
+                      <button className="dropdown-item">
+                        <HiChartBar size={18} />
+                        <span>My Offers</span>
+                      </button>
+                      <button className="dropdown-item">
+                        <HiCog size={18} />
+                        <span>Settings</span>
+                      </button>
+                      <div className="dropdown-divider" />
+                      <div className="dropdown-item-theme">
+                        <ThemeSwitcher />
+                      </div>
+                      <div className="dropdown-divider" />
+                      <button className="dropdown-item danger" onClick={handleSignOut}>
+                        <HiLogout size={18} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
-          <button 
-            className={`add-offer-button ${view === 'form' ? 'active' : ''}`}
-            onClick={() => onViewChange('form')}
-          >
-            <HiPlus size={18} />
-            <span>Add Offer</span>
-          </button>
         </div>
       </div>
-    )}
+    </header>
     </>
   );
 };

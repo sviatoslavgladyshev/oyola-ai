@@ -13,7 +13,7 @@ const Footer = () => {
           <span className="footer-sep">•</span>
           <a href="/terms" className="footer-link">Terms of Service</a>
           <span className="footer-sep">•</span>
-          <a href="mailto:support@oyola.ai" className="footer-link">Contact</a>
+          <a href="mailto:oyola.ai.inc@gmail.com" className="footer-link">Contact</a>
         </nav>
       </div>
     </footer>

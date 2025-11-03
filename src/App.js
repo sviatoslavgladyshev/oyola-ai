@@ -15,6 +15,7 @@ import Footer from './components/layout/Footer';
 import Notification from './components/layout/Notification';
 import Button from './components/ui/Button';
 import Loader from './components/ui/Loader';
+import ThemeSwitcher from './components/ui/ThemeSwitcher';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import { submitOfferToOwners, simulateOwnerResponses } from './services/offerService';
@@ -310,7 +311,16 @@ function App() {
       <div className="App gradient-bg">
         <header className="app-header no-border">
           <div className="header-content">
-            <img src={process.env.PUBLIC_URL + '/logo.png'} alt="Logo" className="header-logo" />
+            <a href="/" aria-label="logo" id="logo-link">
+              <div aria-hidden="true" className="flex">
+                <div className="logo-circle"></div>
+                <div className="logo-bar"></div>
+              </div>
+              <span className="logo-text">Oyola AI</span>
+            </a>
+            <div className="header-right">
+              <ThemeSwitcher />
+            </div>
           </div>
         </header>
         <div className="auth-content">
