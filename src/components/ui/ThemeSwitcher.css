@@ -29,8 +29,19 @@
   display: flex;
   align-items: center;
   padding: 3px;
-  transition: background-color 0.5s ease-out;
-  background-color: var(--color-theme-toggle-track-bg) !important;
+  transition: background-color 0.5s ease-out, border-color 0.5s ease-out, box-shadow 0.5s ease-out;
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* Dark mode: make pill a bit denser */
+html.dark .theme-toggle-track {
+  background-color: rgba(17, 24, 39, 0.55) !important; /* slate-900 @ 55% */
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .theme-icon {
@@ -59,12 +70,19 @@
   justify-content: center;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
               background-color 0.5s ease-out,
-              box-shadow 0.5s ease-out !important;
-  background-color: var(--color-theme-toggle-slider-bg) !important;
-  box-shadow: 0 2px 4px var(--shadow-theme-toggle);
+              box-shadow 0.5s ease-out, 
+              border-color 0.5s ease-out !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
   z-index: 2;
   transform: translateX(0);
   left: 3px;
+}
+
+html.dark .theme-toggle-slider-button {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .theme-toggle-slider-button svg {
@@ -80,7 +98,7 @@
 }
 
 #theme-toggle:hover .theme-toggle-slider-button {
-  box-shadow: 0 3px 6px var(--shadow-theme-toggle-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32);
 }
 
 #theme-toggle:active .theme-toggle-slider-button {
@@ -96,7 +114,16 @@ html.dark #theme-toggle:active .theme-toggle-slider-button {
 }
 
 #theme-toggle:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid rgba(99, 102, 241, 0.8); /* indigo */
   outline-offset: 2px;
   border-radius: 18px;
+}
+
+/* Subtle hover halo to increase visibility on gradients */
+#theme-toggle:hover .theme-toggle-track {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+html.dark #theme-toggle:hover .theme-toggle-track {
+  border-color: rgba(255, 255, 255, 0.2);
 }

@@ -505,3 +505,4 @@ Large Desktop: > 1280px
 
 This prompt provides comprehensive specifications for creating a modern, professional marketing website for Oyola AI using Lovable's component-based development approach. Focus on clean code, reusable components, and excellent user experience across all devices.
 
+

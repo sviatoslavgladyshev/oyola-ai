@@ -45,7 +45,7 @@ html {
 
 html:not(.dark) {
   /* Background Colors - Light Mode */
-  --color-bg: rgb(255, 255, 255); /* white */
+  --color-bg: transparent; /* transparent to show gradient */
   --color-surface-1: rgb(249, 250, 251); /* gray-50 */
   --color-surface-2: rgba(255, 255, 255, 0.8);
   --color-surface-3: rgb(255, 255, 255);

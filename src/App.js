@@ -309,7 +309,7 @@ function App() {
   if (!user) {
     return (
       <div className="App gradient-bg">
-        <header className="app-header no-border">
+        <header className="app-header no-border transparent">
           <div className="header-content">
             <a href="/" aria-label="logo" id="logo-link">
               <div aria-hidden="true" className="flex">
@@ -332,7 +332,7 @@ function App() {
             onSignIn={handleSignIn}
           />
         </div>
-        <Footer />
+        <Footer transparent />
       </div>
     );
   }
@@ -408,27 +408,28 @@ function App() {
           onSignOut={handleSignOut}
           onOpenProfile={() => setShowProfile(true)}
         />
-
-        <Notification 
-          notification={notification} 
-          onClose={() => setNotification(null)} 
-        />
-
-        {showProfile && (
-          <Profile 
-            user={user}
-            onUpdateUser={handleUpdateUser}
-            onClose={() => setShowProfile(false)}
+        <div className="page-gradient">
+          <Notification 
+            notification={notification} 
+            onClose={() => setNotification(null)} 
           />
-        )}
 
-        <div className="container-single">
-          <OwnerDashboard 
-            user={user}
-            onShowNotification={showNotification}
-          />
+          {showProfile && (
+            <Profile 
+              user={user}
+              onUpdateUser={handleUpdateUser}
+              onClose={() => setShowProfile(false)}
+            />
+          )}
+
+          <div className="container-single">
+            <OwnerDashboard 
+              user={user}
+              onShowNotification={showNotification}
+            />
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </div>
     );
   }
@@ -445,25 +446,25 @@ function App() {
         offersCount={offers.length}
         onLocationChange={(location) => console.log('Location changed to:', location)}
       />
-
-      <Notification 
-        notification={notification} 
-        onClose={() => setNotification(null)} 
-      />
-
-      {showProfile && (
-        <Profile 
-          user={user}
-          onUpdateUser={handleUpdateUser}
-          onClose={() => setShowProfile(false)}
+      <div className="page-gradient">
+        <Notification 
+          notification={notification} 
+          onClose={() => setNotification(null)} 
         />
-      )}
 
-      {view === 'handsontable' ? (
-        <HandsontablePage />
-      ) : (
-        <div className="container-single">
-          <main className="main-content-single">
+        {showProfile && (
+          <Profile 
+            user={user}
+            onUpdateUser={handleUpdateUser}
+            onClose={() => setShowProfile(false)}
+          />
+        )}
+
+        {view === 'handsontable' ? (
+          <HandsontablePage />
+        ) : (
+          <div className="container-single">
+            <main className="main-content-single">
             {view === 'dashboard' ? (
             <div className="dashboard-layout">
               {showPostLoginPrompt && (
@@ -639,12 +640,15 @@ function App() {
               </div>
             </>
           )}
-          </main>
-        </div>
-      )}
-      <Footer />
+            </main>
+          </div>
+        )}
+        <Footer />
+      </div>
     </div>
   );
 }
 
 export default App;
+
+

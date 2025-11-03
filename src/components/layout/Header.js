@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiPresentationChartBar, HiLocationMarker, HiMenu, HiX, HiPlus, HiTable, HiEye, HiEyeOff } from 'react-icons/hi';
+import { HiChevronDown, HiUser, HiChartBar, HiCog, HiLogout, HiSearch, HiDocumentText, HiLocationMarker, HiMenu, HiX, HiPlus, HiTable, HiEye, HiEyeOff, HiViewGrid, HiClipboardList } from 'react-icons/hi';
 import { loadInitialLocations, searchLocations, filterLoadedLocations } from '../../utils/locationSearch';
 import ThemeSwitcher from '../ui/ThemeSwitcher';
 
@@ -26,13 +26,35 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
 
   // Detect scroll to convert header to pill
   useEffect(() => {
+    let rafId = null;
+    let ticking = false;
+    
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50); // Trigger pill style after 50px scroll
+      if (!ticking) {
+        rafId = requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          const scrolled = scrollY > 50; // Trigger pill style after 50px scroll
+          setIsScrolled(scrolled);
+          // Automatically collapse tabs when in pill mode
+          if (scrolled) {
+            setTabsCollapsed(true);
+          } else {
+            // When scrolling back up, restore tabs (can still be manually toggled)
+            setTabsCollapsed(false);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   // Detect if we're on mobile
@@ -403,7 +425,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                         className={`mobile-menu-item ${view === 'dashboard' ? 'active' : ''}`}
                         onClick={() => handleViewChange('dashboard')}
                       >
-                        <HiLocationMarker size={20} />
+                        <HiViewGrid size={20} />
                         <span>Dashboard</span>
                       </button>
                       <button 
@@ -418,7 +440,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                         onClick={() => handleViewChange('results')}
                         disabled={!offersCount || offersCount === 0}
                       >
-                        <HiPresentationChartBar size={20} />
+                        <HiClipboardList size={20} />
                         <span>My Offers {offersCount > 0 && `(${offersCount})`}</span>
                       </button>
                       <button 
@@ -720,14 +742,14 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
         {/* Right Section: Navigation & Actions */}
         <div className="header-right-group">
           {user && user.role !== 'owner' && onViewChange && (
-            <div className={`header-nav-tabs ${tabsCollapsed ? 'collapsed' : ''}`}>
+            <div className={`header-nav-tabs ${tabsCollapsed || isScrolled ? 'collapsed' : ''}`}>
               <button 
                 className={`header-nav-button ${view === 'dashboard' ? 'active' : ''}`}
                 onClick={() => handleViewChange('dashboard')}
                 title="Dashboard"
               >
-                <HiLocationMarker size={18} />
-                {!tabsCollapsed && <span className="nav-text">Dashboard</span>}
+                <HiViewGrid size={18} />
+                {!tabsCollapsed && !isScrolled && <span className="nav-text">Dashboard</span>}
               </button>
               <button 
                 className={`header-nav-button ${view === 'results' || view === 'detail' ? 'active' : ''}`}
@@ -735,8 +757,8 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                 disabled={!offersCount || offersCount === 0}
                 title={`My Offers ${offersCount > 0 ? `(${offersCount})` : ''}`}
               >
-                <HiPresentationChartBar size={18} />
-                {!tabsCollapsed && <span className="nav-text">Offers {offersCount > 0 && `(${offersCount})`}</span>}
+                <HiClipboardList size={18} />
+                {!tabsCollapsed && !isScrolled && <span className="nav-text">Offers {offersCount > 0 && `(${offersCount})`}</span>}
               </button>
               <button 
                 className={`header-nav-button ${view === 'handsontable' ? 'active' : ''}`}
@@ -744,20 +766,22 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                 title="Data Table"
               >
                 <HiTable size={18} />
-                {!tabsCollapsed && <span className="nav-text">Table</span>}
+                {!tabsCollapsed && !isScrolled && <span className="nav-text">Table</span>}
               </button>
-              <button 
-                className="header-nav-collapse-toggle"
-                onClick={() => setTabsCollapsed(!tabsCollapsed)}
-                title={tabsCollapsed ? "Show tabs" : "Hide tabs"}
-                aria-label={tabsCollapsed ? "Show navigation tabs" : "Hide navigation tabs"}
-              >
-                {tabsCollapsed ? (
-                  <HiEye size={18} />
-                ) : (
-                  <HiEyeOff size={18} />
-                )}
-              </button>
+              {!isScrolled && (
+                <button 
+                  className="header-nav-collapse-toggle"
+                  onClick={() => setTabsCollapsed(!tabsCollapsed)}
+                  title={tabsCollapsed ? "Show tabs" : "Hide tabs"}
+                  aria-label={tabsCollapsed ? "Show navigation tabs" : "Hide navigation tabs"}
+                >
+                  {tabsCollapsed ? (
+                    <HiEye size={18} />
+                  ) : (
+                    <HiEyeOff size={18} />
+                  )}
+                </button>
+              )}
             </div>
           )}
           
@@ -765,9 +789,11 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
             <button 
               className={`add-offer-button ${view === 'form' ? 'active' : ''}`}
               onClick={() => handleViewChange('form')}
+              title="Add Offer"
+              aria-label="Add Offer"
             >
               <HiPlus size={18} />
-              <span>Add Offer</span>
+              {!isScrolled && <span className="add-offer-text">Add Offer</span>}
             </button>
           )}
           
@@ -807,7 +833,7 @@ const Header = ({ user, onSignOut, onOpenProfile, onSearch, view, onViewChange, 
                         <span>My Profile</span>
                       </button>
                       <button className="dropdown-item">
-                        <HiChartBar size={18} />
+                        <HiClipboardList size={18} />
                         <span>My Offers</span>
                       </button>
                       <button className="dropdown-item">
